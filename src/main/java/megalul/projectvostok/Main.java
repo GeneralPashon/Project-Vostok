@@ -1,4 +1,4 @@
-package jabbagames.projectvostok;
+package megalul.projectvostok;
 
 public class Main{
 
