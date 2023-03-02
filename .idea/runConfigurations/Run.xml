@@ -5,6 +5,10 @@
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/main/resources" />
     <method v="2">
       <option name="Make" enabled="true" />
+      <option name="BuildArtifacts" enabled="true">
+        <artifact name="ProjectVostok-linux:jar" />
+        <artifact name="ProjectVostok-windows64" />
+      </option>
     </method>
   </configuration>
 </component>
