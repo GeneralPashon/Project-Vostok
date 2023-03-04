@@ -26,7 +26,7 @@ public class Main implements ContextListener{
     private ChunkProvider chunkProvider;
 
     public void init(){
-        batch = new TextureBatch();
+        batch = new TextureBatch(50000);
         font = FontLoader.getDefault();
         font.setScale(0.25F);
         texture = new Texture("textures/blocks/dirt.png");

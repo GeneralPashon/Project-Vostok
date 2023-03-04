@@ -67,10 +67,11 @@ public class ChunkProvider{
     }
 
     public void draw(Batch batch, Texture texture){
-        int chunkSize = 50;
+        int chunkSize = 10;
         int offsetX = Glit.getWidth() / 2 - chunkSize / 2;
         int offsetY = Glit.getHeight() / 2 - chunkSize / 2;
 
+        batch.setAlpha(0.5F);
         for(Chunk chunk: chunkList.values())
             batch.draw(
                 texture,
@@ -80,12 +81,13 @@ public class ChunkProvider{
             );
 
         Vec3f camPos = session.getCamera().getPos();
-        batch.setColor(1, 0, 0, 1);
+        batch.setColor(1, 1, 1, 1);
+        int camSize = chunkSize / 4;
         batch.draw(
             texture,
-            camPos.x * chunkSize - chunkSize / 8F + offsetX,
-            camPos.z * chunkSize - chunkSize / 8F + offsetY,
-            chunkSize / 4F, chunkSize / 4F
+            camPos.x * chunkSize - camSize / 2F + offsetX,
+            camPos.z * chunkSize - camSize / 2F + offsetY,
+            camSize, camSize
         );
         batch.resetColor();
     }
