@@ -24,6 +24,7 @@ public class ChunkProvider{
 
     private volatile boolean queueIsSorted;
 
+
     public ChunkProvider(Main session){
         this.session = session;
 
@@ -57,6 +58,7 @@ public class ChunkProvider{
         thread3.setDaemon(true);
         thread3.start();
     }
+
 
     private void updateChunks(){
         Vec3f camPos = session.getCamera().getPos().clone();
@@ -112,6 +114,7 @@ public class ChunkProvider{
             if(isOffTheGrid(chunkPos))
                 unloadChunk(chunkPos);
     }
+
 
     public void loadChunk(ChunkPos chunkPos){
         Utils.delayMillis(2);
