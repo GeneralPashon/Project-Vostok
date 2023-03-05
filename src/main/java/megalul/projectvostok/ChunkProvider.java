@@ -2,14 +2,15 @@ package megalul.projectvostok;
 
 import glit.Glit;
 import glit.graphics.texture.Texture;
-import glit.graphics.util.Batch;
-import glit.math.Mathc;
+import glit.graphics.util.batch.Batch;
 import glit.math.Maths;
 import glit.math.vecmath.vector.Vec2f;
 import glit.math.vecmath.vector.Vec3f;
+import glit.util.Utils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChunkProvider{
 
@@ -19,6 +20,9 @@ public class ChunkProvider{
 
     private final ConcurrentMap<ChunkPos, Chunk> chunkList;
     private final ConcurrentMap<ChunkPos, ChunkMesh> meshList;
+    private final CopyOnWriteArrayList<ChunkPos> chunkAddingQueue;
+
+    private volatile boolean queueIsSorted;
 
     public ChunkProvider(Main session){
         this.session = session;
@@ -26,31 +30,46 @@ public class ChunkProvider{
         chunkList = new ConcurrentHashMap<>();
         meshList = new ConcurrentHashMap<>();
 
-        Thread thread = new Thread(()->{
+        chunkAddingQueue = new CopyOnWriteArrayList<>();
+
+        Thread thread1 = new Thread(()->{
             while(!Thread.currentThread().isInterrupted()){
-                update();
-                Thread.yield();
+                updateChunks();
             }
         }, "Update Chunks Thread");
-        thread.setDaemon(true);
-        thread.start();
+        thread1.setDaemon(true);
+        thread1.start();
+
+        Thread thread2 = new Thread(()->{
+            while(!queueIsSorted);
+            while(!Thread.currentThread().isInterrupted()){
+                loadChunks();
+            }
+        }, "Load Chunks Thread");
+        thread2.setDaemon(true);
+        thread2.start();
+
+        Thread thread3 = new Thread(()->{
+            while(!Thread.currentThread().isInterrupted()){
+                unloadChunks();
+            }
+        }, "Unload Chunks Thread");
+        thread3.setDaemon(true);
+        thread3.start();
     }
 
-
-    private void update(){
-        Vec3f camPos = session.getCamera().getPos();
+    private void updateChunks(){
+        Vec3f camPos = session.getCamera().getPos().clone();
         int renderDist = session.getOptions().getRenderDistance();
 
         int beginX = Maths.floor(camPos.x) - renderDist;
         int beginZ = Maths.floor(camPos.z) - renderDist;
 
-        for(ChunkPos chunkPos: chunkList.keySet())
-            if(!isAccess(chunkPos))
-                chunkList.remove(chunkPos);
+        boolean needToSort = false;
 
         for(int x = beginX; x < beginX + 1 + renderDist * 2; x++){
             for(int z = beginZ; z < beginZ + 1 + renderDist * 2; z++){
-                if(!isAccess(x, z))
+                if(isOffTheGrid(x, z))
                     continue;
 
                 Chunk chunk = getChunk(x, z);
@@ -58,13 +77,51 @@ public class ChunkProvider{
                     continue;
 
                 ChunkPos chunkPos = new ChunkPos(x, z);
-                chunkList.put(
-                    chunkPos,
-                    new Chunk(chunkPos)
-                );
+                if(!chunkAddingQueue.contains(chunkPos)){
+                    chunkAddingQueue.add(chunkPos);
+                    needToSort = true;
+                }
+            }
+        }
+
+        if(needToSort){
+            chunkAddingQueue.sort((pos1, pos2)->Maths.round(distToChunk(pos1.x, pos1.z, camPos) - Maths.round(distToChunk(pos2.x, pos2.z, camPos))));
+            queueIsSorted = true;
+        }
+    }
+
+    private void loadChunks(){
+        for(ChunkPos chunkPos: chunkAddingQueue){
+            chunkAddingQueue.remove(chunkPos);
+            if(chunkPos == null || isOffTheGrid(chunkPos))
+                continue;
+
+            loadChunk(chunkPos);
+
+            if(queueIsSorted){
+                queueIsSorted = false;
+                break;
             }
         }
     }
+
+    public void unloadChunks(){
+        chunkAddingQueue.removeIf(this::isOffTheGrid);
+
+        for(ChunkPos chunkPos: chunkList.keySet())
+            if(isOffTheGrid(chunkPos))
+                unloadChunk(chunkPos);
+    }
+
+    public void loadChunk(ChunkPos chunkPos){
+        Utils.delayMillis(2);
+        chunkList.put(chunkPos, new Chunk(chunkPos));
+    }
+
+    public void unloadChunk(ChunkPos chunkPos){
+        chunkList.remove(chunkPos);
+    }
+
 
     public void draw(Batch batch, Texture texture){
         int chunkSize = 10;
@@ -90,6 +147,8 @@ public class ChunkProvider{
             camSize, camSize
         );
         batch.resetColor();
+
+        System.out.println(chunkAddingQueue.size());
     }
 
 
@@ -106,14 +165,17 @@ public class ChunkProvider{
     }
 
 
-    public boolean isAccess(int x, int z){
-        Vec3f camPos = session.getCamera().getPos();
-        float toCamDist = (float) Vec2f.len(x - camPos.x + 0.5F, z - camPos.z + 0.5F);
-        return toCamDist <= session.getOptions().getRenderDistance();
+    private boolean isOffTheGrid(int x, int z){
+        return distToChunk(x, z, session.getCamera().getPos()) > session.getOptions().getRenderDistance();
     }
 
-    public boolean isAccess(ChunkPos chunkPos){
-        return isAccess(chunkPos.x, chunkPos.z);
+    private boolean isOffTheGrid(ChunkPos chunkPos){
+        return isOffTheGrid(chunkPos.x, chunkPos.z);
+    }
+
+
+    private float distToChunk(int x, int z, Vec3f camPos){
+        return Vec2f.len(x - camPos.x + 0.5F, z - camPos.z + 0.5F);
     }
 
 }

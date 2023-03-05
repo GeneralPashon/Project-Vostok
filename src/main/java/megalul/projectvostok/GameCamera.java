@@ -11,7 +11,9 @@ public class GameCamera extends PerspectiveCamera{
     }
 
     public void update(){
-        float speed = 0.07F;
+        float speed = 0.07F * Glit.getDeltaTime() * 75;
+        if(Glit.isPressed(Key.LEFT_CONTROL))
+            speed *= 4;
 
         if(Glit.isPressed(Key.W))
             position.z += speed;

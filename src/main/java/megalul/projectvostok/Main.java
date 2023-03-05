@@ -6,7 +6,7 @@ import glit.graphics.font.BitmapFont;
 import glit.graphics.font.FontLoader;
 import glit.graphics.texture.Texture;
 import glit.graphics.util.Gl;
-import glit.graphics.util.TextureBatch;
+import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
 
 public class Main implements ContextListener{
@@ -23,17 +23,16 @@ public class Main implements ContextListener{
 
     private Options options;
     private GameCamera camera;
-    private ChunkProvider chunkProvider;
+    private World world;
 
     public void init(){
-        batch = new TextureBatch(50000);
+        batch = new TextureBatch(10000);
         font = FontLoader.getDefault();
-        font.setScale(0.25F);
         texture = new Texture("textures/blocks/dirt.png");
 
         options = new Options();
         camera = new GameCamera(0.1, 1000, 80);
-        chunkProvider = new ChunkProvider(this);
+        world = new World(this);
     }
 
     public void render(){
@@ -42,8 +41,8 @@ public class Main implements ContextListener{
 
         camera.update();
         batch.begin();
-        chunkProvider.draw(batch, texture);
-        font.drawText(batch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getLineHeight() * font.getScale());
+        world.getChunks().draw(batch, texture);
+        font.drawText(batch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight());
         font.drawText(batch, "(WASD)", 25, 25);
         batch.end();
 
@@ -69,8 +68,8 @@ public class Main implements ContextListener{
         return camera;
     }
 
-    public ChunkProvider getChunkProvider(){
-        return chunkProvider;
+    public World getWorld(){
+        return world;
     }
 
 }

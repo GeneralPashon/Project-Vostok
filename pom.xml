@@ -15,29 +15,5 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
   </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>glit</groupId>
-      <artifactId>core-linux</artifactId>
-      <version>1.0.0</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/glit-core-linux.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>glit</groupId>
-      <artifactId>core-windows64</artifactId>
-      <version>1.0.0</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/glit-core-windows64.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>glit</groupId>
-      <artifactId>core-windows64</artifactId>
-      <version>1.0.0</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/glit-ui.jar</systemPath>
-    </dependency>
-  </dependencies>
   
 </project>
