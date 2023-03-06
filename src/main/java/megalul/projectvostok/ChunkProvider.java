@@ -61,7 +61,7 @@ public class ChunkProvider{
 
 
     private void updateChunks(){
-        Vec3f camPos = session.getCamera().getPos().clone();
+        Vec3f camPos = getCamPos();
         int renderDist = session.getOptions().getRenderDistance();
 
         int beginX = Maths.floor(camPos.x) - renderDist;
@@ -79,6 +79,9 @@ public class ChunkProvider{
                     continue;
 
                 ChunkPos chunkPos = new ChunkPos(x, z);
+                if(!chunkPos.isInFrustum(session.getCamera()))
+                    continue;
+
                 if(!chunkAddingQueue.contains(chunkPos)){
                     chunkAddingQueue.add(chunkPos);
                     needToSort = true;
@@ -131,16 +134,21 @@ public class ChunkProvider{
         int offsetX = Glit.getWidth() / 2 - chunkSize / 2;
         int offsetY = Glit.getHeight() / 2 - chunkSize / 2;
 
-        batch.setAlpha(0.5F);
-        for(Chunk chunk: chunkList.values())
+        for(Chunk chunk: chunkList.values()){
+            if(chunk.getPos().isInFrustum(session.getCamera()))
+                batch.setColor(0.5F, 0.5F, 1, 0.5F);
+            else
+                batch.setColor(1, 1, 1, 0.5F);
+
             batch.draw(
                 texture,
                 chunk.getPos().x * chunkSize + offsetX,
                 chunk.getPos().z * chunkSize + offsetY,
                 chunkSize, chunkSize
             );
+        }
 
-        Vec3f camPos = session.getCamera().getPos();
+        Vec3f camPos = getCamPos();
         batch.setColor(1, 1, 1, 1);
         int camSize = chunkSize / 4;
         batch.draw(
@@ -150,8 +158,6 @@ public class ChunkProvider{
             camSize, camSize
         );
         batch.resetColor();
-
-        System.out.println(chunkAddingQueue.size());
     }
 
 
@@ -169,7 +175,7 @@ public class ChunkProvider{
 
 
     private boolean isOffTheGrid(int x, int z){
-        return distToChunk(x, z, session.getCamera().getPos()) > session.getOptions().getRenderDistance();
+        return distToChunk(x, z, getCamPos()) > session.getOptions().getRenderDistance();
     }
 
     private boolean isOffTheGrid(ChunkPos chunkPos){
@@ -179,6 +185,10 @@ public class ChunkProvider{
 
     private float distToChunk(int x, int z, Vec3f camPos){
         return Vec2f.len(x - camPos.x + 0.5F, z - camPos.z + 0.5F);
+    }
+
+    private Vec3f getCamPos(){
+        return session.getCamera().getPos().clone().div(Chunk.CHUNK_SIZE);
     }
 
 }
