@@ -43,7 +43,7 @@ public class Main implements ContextListener{
         batch.begin();
         world.getChunks().draw(batch, texture);
         font.drawText(batch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight());
-        font.drawText(batch, "(WASD)", 25, 25);
+        font.drawText(batch, "(WASD + (CTRL))", 25, 25);
         batch.end();
 
         if(Glit.isDown(Key.ESCAPE))
