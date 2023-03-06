@@ -120,7 +120,6 @@ public class ChunkProvider{
 
 
     public void loadChunk(ChunkPos chunkPos){
-        Utils.delayMillis(2);
         chunkList.put(chunkPos, new Chunk(chunkPos));
     }
 
