@@ -1,15 +1,13 @@
 package megalul.projectvostok;
 
-import glit.Glit;
-import glit.graphics.texture.Texture;
-import glit.graphics.util.TextureUtils;
-import glit.graphics.util.batch.Batch;
 import glit.math.Maths;
+import glit.math.function.FastNoiseLite;
 import glit.math.vecmath.vector.Vec2f;
 import glit.math.vecmath.vector.Vec3f;
-import glit.util.Utils;
+import glit.util.time.FpsCounter;
+import glit.util.time.Sync;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -17,45 +15,82 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ChunkProvider{
 
     public static final Chunk EMPTY_CHUNK = null;
+    private static final int MAX_LOADS_PER_TICK = 64;
+    private static final int MAX_UPDATES_PER_TICK = 128;
 
     private final Main session;
 
-    private final ConcurrentMap<ChunkPos, Chunk> chunkList;
-    private final ConcurrentMap<ChunkPos, ChunkMesh> meshList;
-    private final CopyOnWriteArrayList<ChunkPos> chunkAddingQueue;
+    private final ConcurrentMap<ChunkPos, Chunk> loadedChunkList;
+    private final CopyOnWriteArrayList<ChunkPos> chunkLoadQueue;
+    private final Set<ChunkPos> chunksToLoadQueue;
 
-    private volatile boolean queueIsSorted;
+    private final CopyOnWriteArrayList<Chunk> chunksToBuildQueue;
+    private final ConcurrentMap<ChunkPos, float[]> builtChunksList;
+    private final ConcurrentMap<ChunkPos, ChunkMesh> meshList;
+
+    public final FpsCounter updateTps, loadTps, unloadTps;
+    private final Sync updateSync, loadSync, unloadSync;
 
 
     public ChunkProvider(Main session){
         this.session = session;
 
-        chunkList = new ConcurrentHashMap<>();
+        loadedChunkList = new ConcurrentHashMap<>();
+
+        chunksToBuildQueue = new CopyOnWriteArrayList<>();
+        builtChunksList = new ConcurrentHashMap<>();
         meshList = new ConcurrentHashMap<>();
 
-        chunkAddingQueue = new CopyOnWriteArrayList<>();
+        chunksToLoadQueue = new HashSet<>();
+        chunkLoadQueue = new CopyOnWriteArrayList<>();
+
+        updateTps = new FpsCounter();
+        loadTps = new FpsCounter();
+        unloadTps = new FpsCounter();
+
+        updateSync = new Sync(40);
+        loadSync = new Sync(40);
+        unloadSync = new Sync(40);
 
         Thread updateThread = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted())
+            while(!Thread.currentThread().isInterrupted()){
+                updateTps.update();
+                updateSync.sync();
                 updateChunks();
+            }
         }, "Update Chunks Thread");
         updateThread.setDaemon(true);
         updateThread.start();
 
         Thread loadThread = new Thread(()->{
-            while(!queueIsSorted);
-            while(!Thread.currentThread().isInterrupted())
+            while(!Thread.currentThread().isInterrupted()){
+                loadTps.update();
+                loadSync.sync();
                 loadChunks();
+            }
         }, "Load Chunks Thread");
         loadThread.setDaemon(true);
         loadThread.start();
 
         Thread unloadThread = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted())
+            while(!Thread.currentThread().isInterrupted()){
+                unloadTps.update();
+                unloadSync.sync();
                 unloadChunks();
+            }
         }, "Unload Chunks Thread");
         unloadThread.setDaemon(true);
         unloadThread.start();
+
+        Thread updateThread2 = new Thread(()->{
+            while(!Thread.currentThread().isInterrupted()){
+                // updateTps.update();
+                // updateSync.sync();
+                buildChunks();
+            }
+        }, "Build Chunks Thread");
+        updateThread2.setDaemon(true);
+        updateThread2.start();
     }
 
 
@@ -65,11 +100,15 @@ public class ChunkProvider{
 
         int beginX = Maths.floor(camPos.x) - renderDist;
         int beginZ = Maths.floor(camPos.z) - renderDist;
+        int endX = beginX + 1 + renderDist * 2;
+        int endZ = beginZ + 1 + renderDist * 2;
 
-        boolean needToSort = false;
+        int updatedChunksNum = 0;
+        cycle: for(int x = beginX; x < endX; x++){
+            for(int z = beginZ; z < endZ; z++){
+                //if(updatedChunksNum >= MAX_UPDATES_PER_TICK)
+                //    break cycle;
 
-        for(int x = beginX; x < beginX + 1 + renderDist * 2; x++){
-            for(int z = beginZ; z < beginZ + 1 + renderDist * 2; z++){
                 if(isOffTheGrid(x, z))
                     continue;
 
@@ -78,101 +117,106 @@ public class ChunkProvider{
                     continue;
 
                 ChunkPos chunkPos = new ChunkPos(x, z);
-                if(!chunkPos.isInFrustum(session.getCamera()))
+                if(!chunkPos.isInFrustum(session.getCamera()) || chunkLoadQueue.contains(chunkPos) || loadedChunkList.containsKey(chunkPos))
                     continue;
 
-                if(!chunkAddingQueue.contains(chunkPos)){
-                    chunkAddingQueue.add(chunkPos);
-                    needToSort = true;
-                }
+                chunksToLoadQueue.add(chunkPos);
+                updatedChunksNum++;
             }
         }
 
-        if(needToSort){
-            chunkAddingQueue.sort((pos1, pos2)->Maths.round(distToChunk(pos1.x, pos1.z, camPos) - Maths.round(distToChunk(pos2.x, pos2.z, camPos))));
-            queueIsSorted = true;
+        if(chunksToLoadQueue.size() != 0){
+            chunkLoadQueue.addAll(chunksToLoadQueue);
+            chunkLoadQueue.sort((pos1, pos2)->Maths.round(distToChunk(pos1.x, pos1.z, camPos) - Maths.round(distToChunk(pos2.x, pos2.z, camPos))));
+            chunksToLoadQueue.clear();
         }
     }
 
     private void loadChunks(){
-        for(ChunkPos chunkPos: chunkAddingQueue){
-            chunkAddingQueue.remove(chunkPos);
+        int chunkLoadedNum = 0;
+        for(ChunkPos chunkPos: chunkLoadQueue){
+            if(chunkLoadedNum >= MAX_LOADS_PER_TICK)
+                break;
+
+            chunkLoadQueue.remove(chunkPos);
             if(chunkPos == null || isOffTheGrid(chunkPos))
                 continue;
-
             loadChunk(chunkPos);
-
-            if(queueIsSorted){
-                queueIsSorted = false;
-                break;
-            }
+            chunkLoadedNum++;
         }
     }
 
     public void unloadChunks(){
-        chunkAddingQueue.removeIf(this::isOffTheGrid);
+        chunkLoadQueue.removeIf(this::isOffTheGrid);
 
-        for(ChunkPos chunkPos: chunkList.keySet())
+        for(ChunkPos chunkPos: loadedChunkList.keySet())
             if(isOffTheGrid(chunkPos))
                 unloadChunk(chunkPos);
     }
 
+    private void buildChunks(){
+        for(Chunk chunk: chunksToBuildQueue){
+            float[] vertices = ChunkBuilder.build(chunk);
+            builtChunksList.put(chunk.getPos(), vertices);
+        }
+    }
+
 
     public void loadChunk(ChunkPos chunkPos){
-        Utils.delayMillis(3);
-        chunkList.put(chunkPos, new Chunk(chunkPos));
+        // Utils.delayMillis(10);
+        Chunk chunk = new Chunk(chunkPos);
+        loadedChunkList.put(chunkPos, chunk);
+
+        final FastNoiseLite noise = new FastNoiseLite();
+        noise.setFrequency(0.007F);
+
+        for(int i = 0; i < 16; i++)
+            for(int j = 0; j < 16; j++){
+                int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * Chunk.HEIGHT / 2 + Chunk.HEIGHT / 2F);
+                chunk.getBlocks().set(i, y, j, new BlockState(BlockType.DIRT));
+            }
+
+        chunksToBuildQueue.add(chunk);
     }
 
     public void unloadChunk(ChunkPos chunkPos){
-        chunkList.remove(chunkPos);
+        loadedChunkList.remove(chunkPos);
     }
 
 
-    public void draw(Batch batch){
-        int chunkSize = 10;
+    public void updateMeshes(){
+        for(Map.Entry<ChunkPos, float[]> entry: builtChunksList.entrySet())
+            loadChunkMesh(entry.getKey(), entry.getValue());
+    }
 
-        for(Chunk chunk: chunkList.values()){
-            if(chunk.getPos().isInFrustum(session.getCamera()))
-                batch.setColor(0.5F, 0.5F, 1, 1);
-            else
-                batch.setColor(1, 1, 1, 1);
+    public void loadChunkMesh(ChunkPos chunkPos, float[] vertices){
+        ChunkMesh mesh = meshList.get(chunkPos);
+        if(mesh == null)
+            mesh = new ChunkMesh();
 
-            batch.draw(
-                chunk.texture == null ? TextureUtils.quadTexture() : chunk.texture,
-                chunk.getPos().x * chunkSize,
-                chunk.getPos().z * chunkSize,
-                chunkSize,
-                chunkSize
-            );
-        }
-
-        Vec3f camPos = getCamPos();
-        batch.setColor(1, 1, 1, 1);
-        int camSize = chunkSize / 4;
-        batch.draw(
-            TextureUtils.quadTexture(),
-            camPos.x * chunkSize - camSize / 2F,
-            camPos.z * chunkSize - camSize / 2F,
-            camSize, camSize
-        );
-        batch.resetColor();
+        mesh.setVertices(vertices);
+        meshList.put(chunkPos, mesh);
     }
 
 
     public Chunk getChunk(ChunkPos chunkPos){
-        return chunkList.getOrDefault(chunkPos, EMPTY_CHUNK);
+        return loadedChunkList.getOrDefault(chunkPos, EMPTY_CHUNK);
     }
 
     public Chunk getChunk(int x, int z){
-        ChunkPos chunkPos = chunkList.keySet().stream().filter(pos->pos.x == x && pos.z == z).findAny().orElse(null);
+        ChunkPos chunkPos = loadedChunkList.keySet().stream().filter(pos->pos.x == x && pos.z == z).findAny().orElse(null);
         if(chunkPos == null)
             return EMPTY_CHUNK;
 
-        return chunkList.getOrDefault(chunkPos, EMPTY_CHUNK);
+        return loadedChunkList.getOrDefault(chunkPos, EMPTY_CHUNK);
     }
 
     public Collection<Chunk> getChunks(){
-        return chunkList.values();
+        return loadedChunkList.values();
+    }
+
+    public Collection<Map.Entry<ChunkPos, ChunkMesh>> getMeshes(){
+        return meshList.entrySet();
     }
 
 

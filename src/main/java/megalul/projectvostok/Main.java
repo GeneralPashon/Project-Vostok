@@ -2,14 +2,13 @@ package megalul.projectvostok;
 
 import glit.Glit;
 import glit.context.ContextListener;
-import glit.graphics.camera.CenteredOrthographicCamera;
 import glit.graphics.font.BitmapFont;
 import glit.graphics.font.FontLoader;
+import glit.graphics.gl.Target;
 import glit.graphics.util.Gl;
 import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
-import glit.math.Maths;
-import glit.math.function.FastNoiseLite;
+import glit.math.vecmath.vector.Vec3f;
 
 public class Main implements ContextListener{
 
@@ -20,72 +19,71 @@ public class Main implements ContextListener{
 
 
     private TextureBatch batch;
+
     private TextureBatch uiBatch;
-    private CenteredOrthographicCamera camera2d;
     private BitmapFont font;
 
     private Options options;
     private GameCamera camera;
     private World world;
+    private WorldRenderer renderer;
+
 
     public void init(){
-        batch = new TextureBatch(1000);
-        uiBatch = new TextureBatch(1000);
-        camera2d = new CenteredOrthographicCamera();
+        // Gl.enable(Target.DEPTH_TEST);
+
+        batch = new TextureBatch(10000);
+        uiBatch = new TextureBatch(150);
         font = FontLoader.getDefault();
 
         options = new Options();
-        camera = new GameCamera(0.1, 1000, 80);
+        camera = new GameCamera(0.1, 1000, 110);
         world = new World(this);
+        renderer = new WorldRenderer(this);
+
+        Glit.mouse().show(false);
     }
 
     public void render(){
-        Gl.clearColor(0.1, 0.06, 0.15);
+        controls();
+        Gl.clearColor(0.2, 0.12, 0.3);
         Gl.clearBufferColor();
 
         camera.update();
-        camera2d.update();
-        batch.begin(camera2d);
-        world.getChunks().draw(batch);
-        batch.end();
+        getWorld().getChunks().updateMeshes();
+        renderer.render();
+        renderUi();
+    }
 
-        if(Glit.isDown(Key.ESCAPE))
-            Glit.exit();
-
-        FastNoiseLite noise = new FastNoiseLite();
-        noise.setFrequency(0.007F);
-
-        for(Chunk chunk: world.getChunks().getChunks())
-            if(chunk.texture == null){
-                for(int i = 0; i < 16; i++)
-                    for(int j = 0; j < 16; j++){
-                        int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * Chunk.HEIGHT / 2 + Chunk.HEIGHT / 2F);
-                        chunk.setBlock(i, y, j, new BlockState(BlockType.DIRT));
-                    }
-                chunk.buildTexture();
-            }
-
-        final float scale = 1.2F;
-        int scroll = Glit.mouse().getScroll();
-        if(scroll > 0)
-            camera2d.scale(scale);
-        else if(scroll < 0)
-            camera2d.scale(1 / scale);
-
+    private void renderUi(){
         uiBatch.begin();
+        uiBatch.setColor(0.5F, 0.4F, 0.1F, 1);
         font.drawText(uiBatch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight());
+        font.drawText(uiBatch, "ChunkProvider Threads:", 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 2);
+        font.drawText(uiBatch, "update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 3);
+        font.drawText(uiBatch, "load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
+        font.drawText(uiBatch, "unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
         font.drawText(uiBatch, "(WASD + (CTRL))", 25, 25);
         font.drawText(uiBatch, "(Scroll for scaling)", 25, 25 + font.getScaledLineHeight());
+        font.drawText(uiBatch, "(Mouse for moving camera)", 25, 25 + font.getScaledLineHeight() * 2);
         uiBatch.end();
     }
 
+    private void controls(){
+        if(Glit.isDown(Key.ESCAPE))
+            Glit.exit();
+        if(Glit.isDown(Key.F11))
+            Glit.window().toggleFullscreen();
+    }
+
+
     public void resize(int width, int height){
         camera.resize(width, height);
-        camera2d.resize(width, height);
     }
 
     public void dispose(){
         batch.dispose();
+        renderer.dispose();
     }
 
 

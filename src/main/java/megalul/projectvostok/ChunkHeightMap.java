@@ -10,16 +10,10 @@ public class ChunkHeightMap extends ChunkUtils{
 
 
     public int getHeight(int x, int z){
-        if(isOutOfBounds(x, z))
-            return 0;
-
         return heights[getIndex(x, z)];
     }
 
     public void setHeight(int x, int z, int height){
-        if(isOutOfBounds(x, z))
-            return;
-
         heights[getIndex(x, z)] = (short) height;
     }
 
