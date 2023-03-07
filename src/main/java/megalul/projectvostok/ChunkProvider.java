@@ -130,8 +130,6 @@ public class ChunkProvider{
 
     public void draw(Batch batch){
         int chunkSize = 10;
-        int offsetX = Glit.getWidth() / 2 - chunkSize / 2;
-        int offsetY = Glit.getHeight() / 2 - chunkSize / 2;
 
         for(Chunk chunk: chunkList.values()){
             if(chunk.getPos().isInFrustum(session.getCamera()))
@@ -141,8 +139,8 @@ public class ChunkProvider{
 
             batch.draw(
                 chunk.texture == null ? TextureUtils.quadTexture() : chunk.texture,
-                chunk.getPos().x * chunkSize + offsetX,
-                chunk.getPos().z * chunkSize + offsetY,
+                chunk.getPos().x * chunkSize,
+                chunk.getPos().z * chunkSize,
                 chunkSize,
                 chunkSize
             );
@@ -153,8 +151,8 @@ public class ChunkProvider{
         int camSize = chunkSize / 4;
         batch.draw(
             TextureUtils.quadTexture(),
-            camPos.x * chunkSize - camSize / 2F + offsetX,
-            camPos.z * chunkSize - camSize / 2F + offsetY,
+            camPos.x * chunkSize - camSize / 2F,
+            camPos.z * chunkSize - camSize / 2F,
             camSize, camSize
         );
         batch.resetColor();
