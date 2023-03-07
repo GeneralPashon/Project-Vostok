@@ -33,6 +33,9 @@ public class Main implements ContextListener{
         options = new Options();
         camera = new GameCamera(0.1, 1000, 80);
         world = new World(this);
+
+        BlockState state = new BlockState(1, (byte) 127);
+        System.out.println(Integer.toBinaryString(state.getState()) + ": " + state.id + ", " + Integer.toBinaryString(state.extraData));
     }
 
     public void render(){

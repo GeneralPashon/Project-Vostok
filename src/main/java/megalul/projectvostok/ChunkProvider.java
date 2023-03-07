@@ -33,30 +33,27 @@ public class ChunkProvider{
 
         chunkAddingQueue = new CopyOnWriteArrayList<>();
 
-        Thread thread1 = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted()){
+        Thread updateThread = new Thread(()->{
+            while(!Thread.currentThread().isInterrupted())
                 updateChunks();
-            }
         }, "Update Chunks Thread");
-        thread1.setDaemon(true);
-        thread1.start();
+        updateThread.setDaemon(true);
+        updateThread.start();
 
-        Thread thread2 = new Thread(()->{
+        Thread loadThread = new Thread(()->{
             while(!queueIsSorted);
-            while(!Thread.currentThread().isInterrupted()){
+            while(!Thread.currentThread().isInterrupted())
                 loadChunks();
-            }
         }, "Load Chunks Thread");
-        thread2.setDaemon(true);
-        thread2.start();
+        loadThread.setDaemon(true);
+        loadThread.start();
 
-        Thread thread3 = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted()){
+        Thread unloadThread = new Thread(()->{
+            while(!Thread.currentThread().isInterrupted())
                 unloadChunks();
-            }
         }, "Unload Chunks Thread");
-        thread3.setDaemon(true);
-        thread3.start();
+        unloadThread.setDaemon(true);
+        unloadThread.start();
     }
 
 
@@ -75,7 +72,7 @@ public class ChunkProvider{
                     continue;
 
                 Chunk chunk = getChunk(x, z);
-                if(chunk != EMPTY_CHUNK)
+                if(chunk != null)
                     continue;
 
                 ChunkPos chunkPos = new ChunkPos(x, z);
@@ -120,6 +117,7 @@ public class ChunkProvider{
 
 
     public void loadChunk(ChunkPos chunkPos){
+        Utils.delayMillis(3);
         chunkList.put(chunkPos, new Chunk(chunkPos));
     }
 
