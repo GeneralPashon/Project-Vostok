@@ -1,6 +1,6 @@
 package megalul.projectvostok;
 
-public class ChunkBlocks extends ChunkDataContainer{
+public class ChunkBlocks extends ChunkUtils{
 
     private final short[] blocks;
 
@@ -9,23 +9,25 @@ public class ChunkBlocks extends ChunkDataContainer{
     }
 
 
-    public short get(int x, int y, int z){
-        if(isOutOfBounds(x, y, z))
-            return 0;
+    public BlockState get(int x, int y, int z){
+        if(isOutOfBounds(x, z))
+            return AIR;
 
-        return blocks[getIndex(x, y, z)];
+        return new BlockState(blocks[getIndex(x, y, z)]);
     }
 
-    public void set(int x, int y, int z, short block){
-        if(isOutOfBounds(x, y, z))
-            return;
+    public boolean set(int x, int y, int z, BlockState block){
+        if(isOutOfBounds(x, z))
+            return false;
 
-        blocks[getIndex(x, y, z)] = block;
+        byte oldID = BlockState.getIDFromState(blocks[getIndex(x, y, z)]);
+        blocks[getIndex(x, y, z)] = block.getState();
+        return oldID != block.type.id;
     }
 
 
-    public BlockState getBlock(int x, int y, int z){
-        return new BlockState((byte) ((get(x, y, z) >> 8) & 0xFF));
+    public int getIDNow(int x, int y, int z){
+        return BlockState.getIDFromState(blocks[getIndex(x, y, z)]);
     }
 
 }

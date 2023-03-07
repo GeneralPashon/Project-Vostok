@@ -2,12 +2,14 @@ package megalul.projectvostok;
 
 import glit.Glit;
 import glit.graphics.texture.Texture;
+import glit.graphics.util.TextureUtils;
 import glit.graphics.util.batch.Batch;
 import glit.math.Maths;
 import glit.math.vecmath.vector.Vec2f;
 import glit.math.vecmath.vector.Vec3f;
 import glit.util.Utils;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -126,22 +128,23 @@ public class ChunkProvider{
     }
 
 
-    public void draw(Batch batch, Texture texture){
+    public void draw(Batch batch){
         int chunkSize = 10;
         int offsetX = Glit.getWidth() / 2 - chunkSize / 2;
         int offsetY = Glit.getHeight() / 2 - chunkSize / 2;
 
         for(Chunk chunk: chunkList.values()){
             if(chunk.getPos().isInFrustum(session.getCamera()))
-                batch.setColor(0.5F, 0.5F, 1, 0.5F);
+                batch.setColor(0.5F, 0.5F, 1, 1);
             else
-                batch.setColor(1, 1, 1, 0.5F);
+                batch.setColor(1, 1, 1, 1);
 
             batch.draw(
-                texture,
+                chunk.texture == null ? TextureUtils.quadTexture() : chunk.texture,
                 chunk.getPos().x * chunkSize + offsetX,
                 chunk.getPos().z * chunkSize + offsetY,
-                chunkSize, chunkSize
+                chunkSize,
+                chunkSize
             );
         }
 
@@ -149,7 +152,7 @@ public class ChunkProvider{
         batch.setColor(1, 1, 1, 1);
         int camSize = chunkSize / 4;
         batch.draw(
-            texture,
+            TextureUtils.quadTexture(),
             camPos.x * chunkSize - camSize / 2F + offsetX,
             camPos.z * chunkSize - camSize / 2F + offsetY,
             camSize, camSize
@@ -170,6 +173,10 @@ public class ChunkProvider{
         return chunkList.getOrDefault(chunkPos, EMPTY_CHUNK);
     }
 
+    public Collection<Chunk> getChunks(){
+        return chunkList.values();
+    }
+
 
     private boolean isOffTheGrid(int x, int z){
         return distToChunk(x, z, getCamPos()) > session.getOptions().getRenderDistance();
@@ -185,7 +192,7 @@ public class ChunkProvider{
     }
 
     private Vec3f getCamPos(){
-        return session.getCamera().getPos().clone().div(Chunk.CHUNK_SIZE);
+        return session.getCamera().getPos().clone().div(Chunk.SIZE_XZ);
     }
 
 }
