@@ -7,12 +7,16 @@ import glit.math.vecmath.vector.Vec3f;
 
 public class GameCamera extends PerspectiveCamera{
 
+    private final Main session;
+
     private final Vec3f up = new Vec3f(0, 1, 0);
     private float dAngX, dAngY, prevX, prevY;
     private boolean doNotRotateThisFrame;
 
-    public GameCamera(double near, double far, double fieldOfView){
+    public GameCamera(Main session, double near, double far, double fieldOfView){
         super(near, far, fieldOfView);
+
+        this.session = session;
 
         doNotRotateThisFrame = true;
         Glit.mouse().show(false);
@@ -27,8 +31,9 @@ public class GameCamera extends PerspectiveCamera{
                 dAngX += prevX - x;
                 dAngY += prevY - y;
 
-                getRot().yaw += dAngX * 0.05;
-                getRot().pitch += dAngY * 0.05;
+                float sensitivity = session.getOptions().getMouseSensitivity();
+                getRot().yaw += dAngX * 0.1 * sensitivity;
+                getRot().pitch += dAngY * 0.1 * sensitivity;
                 getRot().constrain();
 
                 dAngX *= 0.1;
@@ -42,7 +47,7 @@ public class GameCamera extends PerspectiveCamera{
 
 
         float speed = Glit.getDeltaTime() * 75;
-        if(Glit.isPressed(Key.LEFT_CONTROL))
+        if(isPressed(KeyMapping.SPRINT))
             speed *= 3;
 
         Vec3f dir = getRot().direction();
@@ -50,22 +55,26 @@ public class GameCamera extends PerspectiveCamera{
         acceleration.y = 0;
         acceleration.nor().mul(speed);
 
-        if(Glit.isPressed(Key.W))
+        if(isPressed(KeyMapping.FORWARD))
             getPos().add(acceleration);
-        if(Glit.isPressed(Key.S))
+        if(isPressed(KeyMapping.BACK))
             getPos().sub(acceleration);
 
         Vec3f sideMove = Vec3f.crs(up, dir).mul(speed);
-        if(Glit.isPressed(Key.D))
+        if(isPressed(KeyMapping.RIGHT))
             getPos().add(sideMove);
-        if(Glit.isPressed(Key.A))
+        if(isPressed(KeyMapping.LEFT))
             getPos().sub(sideMove);
-        if(Glit.isPressed(Key.SPACE))
+        if(isPressed(KeyMapping.JUMP))
             getPos().y += speed;
-        if(Glit.isPressed(Key.LEFT_SHIFT))
+        if(isPressed(KeyMapping.SNEAK))
             getPos().y -= speed;
 
         super.update();
+    }
+
+    private boolean isPressed(KeyMapping key){
+        return Glit.isPressed(session.getOptions().getKey(key));
     }
 
 }

@@ -12,7 +12,7 @@ import glit.util.time.Sync;
 
 public class Main implements ContextListener{
 
-    public static String GAME_DIR_PATH = "./";//System.getProperty("user.home") + "/.project_vostok/";
+    public static String GAME_DIR_PATH = "./";
 
 
     public static void main(String[] args){
@@ -37,7 +37,7 @@ public class Main implements ContextListener{
         fpsSync = new Sync(0);
         options = new Options(this, GAME_DIR_PATH);
 
-        camera = new GameCamera(0.1, 1000, 110);
+        camera = new GameCamera(this, 0.1, 1000, 110);
         camera.getPos().y = Chunk.HEIGHT;
         camera.getRot().set(0, 0, 0);
         renderer = new WorldRenderer(this);
@@ -56,6 +56,9 @@ public class Main implements ContextListener{
     }
 
     private void renderUi(){
+        if(!options.isShowFps())
+            return;
+
         uiBatch.begin();
         uiBatch.setColor(0.5F, 0.4F, 0.1F, 1);
         font.drawText(uiBatch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight());
