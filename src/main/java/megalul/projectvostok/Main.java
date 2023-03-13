@@ -56,7 +56,7 @@ public class Main implements ContextListener{
     }
 
     private void renderUi(){
-        if(!options.isShowFps())
+        if(!options.isShowFPS())
             return;
 
         uiBatch.begin();

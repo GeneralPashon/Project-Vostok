@@ -91,14 +91,14 @@ public class Options{
         out.println("control.mouseSensitivity : " + mouseSensitivity);
 
         for(KeyMapping keyType: KeyMapping.values())
-            out.println("key." + keyType.toString().toLowerCase() + " : " + keyMappings.getOrDefault(keyType, keyType.getDefaultKey()).toString().toLowerCase());
+            out.println("key." + keyType.toString().toLowerCase() + " : " + keyMappings.getOrDefault(keyType, keyType.getDefault()).toString().toLowerCase());
 
         out.close();
     }
 
 
     public Key getKey(KeyMapping keyType){
-        return keyMappings.getOrDefault(keyType, keyType.getDefaultKey());
+        return keyMappings.getOrDefault(keyType, keyType.getDefault());
     }
 
     public void setKey(KeyMapping keyType, Key key){
@@ -106,11 +106,11 @@ public class Options{
     }
 
 
-    public int getFov(){
+    public int getFOV(){
         return fov;
     }
 
-    public void setFov(int fov){
+    public void setFOV(int fov){
         this.fov = fov;
         session.getCamera().setFov(fov);
     }
@@ -149,11 +149,11 @@ public class Options{
     }
 
 
-    public boolean isShowFps(){
+    public boolean isShowFPS(){
         return showFps;
     }
 
-    public void setShowFps(boolean showFps){
+    public void setShowFPS(boolean showFps){
         this.showFps = showFps;
     }
 

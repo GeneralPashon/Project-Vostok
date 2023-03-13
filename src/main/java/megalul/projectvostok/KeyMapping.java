@@ -2,7 +2,7 @@ package megalul.projectvostok;
 
 import glit.io.glfw.Key;
 
-public enum KeyMapping{
+public enum KeyMapping implements Option<Key>{
 
     FORWARD   (Key.W),
     LEFT      (Key.A),
@@ -25,7 +25,8 @@ public enum KeyMapping{
         this.defaultKey = defaultKey;
     }
 
-    public Key getDefaultKey(){
+    @Override
+    public Key getDefault(){
         return defaultKey;
     }
 
