@@ -44,8 +44,6 @@ public class Options{
     private void load(){
         String[] lines = optionsFile.readString().split("\n");
 
-        System.out.println(lines.length);
-
         for(String line: lines){
             String[] parts = line.split(" : ");
             if(parts.length != 2)
