@@ -38,6 +38,8 @@ public class Main implements ContextListener{
 
         options = new Options();
         camera = new GameCamera(0.1, 1000, 110);
+        camera.getPos().y = 24;
+        camera.getRot().set(0, 0, 0);
         world = new World(this);
         renderer = new WorldRenderer(this);
 
