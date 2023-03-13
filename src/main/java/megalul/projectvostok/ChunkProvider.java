@@ -167,20 +167,11 @@ public class ChunkProvider{
 
 
     public void loadChunk(ChunkPos chunkPos){
-        // Utils.delayMillis(10);
         Chunk chunk = new Chunk(chunkPos);
-        loadedChunkList.put(chunkPos, chunk);
-
-        final FastNoiseLite noise = new FastNoiseLite();
-        noise.setFrequency(0.007F);
-
-        for(int i = 0; i < 16; i++)
-            for(int j = 0; j < 16; j++){
-                int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * Chunk.HEIGHT / 2 + Chunk.HEIGHT / 2F);
-                chunk.getBlocks().set(i, y, j, new BlockState(BlockType.DIRT));
-            }
+        ChunkGenerator.generate(chunk);
 
         chunksToBuildQueue.add(chunk);
+        loadedChunkList.put(chunkPos, chunk);
     }
 
     public void unloadChunk(ChunkPos chunkPos){

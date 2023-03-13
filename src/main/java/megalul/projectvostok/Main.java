@@ -4,11 +4,9 @@ import glit.Glit;
 import glit.context.ContextListener;
 import glit.graphics.font.BitmapFont;
 import glit.graphics.font.FontLoader;
-import glit.graphics.gl.Target;
 import glit.graphics.util.Gl;
 import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
-import glit.math.vecmath.vector.Vec3f;
 
 public class Main implements ContextListener{
 
@@ -27,14 +25,12 @@ public class Main implements ContextListener{
 
 
     public void init(){
-        // Gl.enable(Target.DEPTH_TEST);
-
         uiBatch = new TextureBatch(150);
         font = FontLoader.getDefault();
 
         options = new Options();
         camera = new GameCamera(0.1, 1000, 110);
-        camera.getPos().y = 24;
+        camera.getPos().y = Chunk.HEIGHT;
         camera.getRot().set(0, 0, 0);
         world = new World(this);
         renderer = new WorldRenderer(this);
@@ -44,7 +40,7 @@ public class Main implements ContextListener{
 
     public void render(){
         controls();
-        Gl.clearColor(0.2, 0.12, 0.3);
+        Gl.clearColor(0.4, 0.7, 0.9);
         Gl.clearBufferColor();
 
         camera.update();

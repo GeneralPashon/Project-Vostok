@@ -15,7 +15,7 @@ public class ChunkPos{
     public boolean isInFrustum(GameCamera camera){
         return camera.getFrustum().isBoxInFrustum(
             x * Chunk.SIZE_XZ, 0, z * Chunk.SIZE_XZ,
-            x * Chunk.SIZE_XZ + Chunk.SIZE_XZ, Chunk.SIZE_XZ, z * Chunk.SIZE_XZ + Chunk.SIZE_XZ
+            x * Chunk.SIZE_XZ + Chunk.SIZE_XZ, Chunk.HEIGHT, z * Chunk.SIZE_XZ + Chunk.SIZE_XZ
         );
     }
 

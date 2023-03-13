@@ -22,7 +22,7 @@ public class WorldRenderer implements Disposable{
         this.session = session;
 
         chunkShader = new Shader(new FileHandle("shader/chunk.vert"), new FileHandle("shader/chunk.frag"));
-        atlasTexture = new Texture("texture/grass.png");
+        atlasTexture = new Texture("texture/stone.png");
     }
 
     boolean render = true;
