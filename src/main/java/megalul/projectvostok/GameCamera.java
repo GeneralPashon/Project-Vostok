@@ -15,27 +15,30 @@ public class GameCamera extends PerspectiveCamera{
         super(near, far, fieldOfView);
 
         doNotRotateThisFrame = true;
+        Glit.mouse().show(false);
     }
 
 
     public void update(){
-        if(!doNotRotateThisFrame){
-            float x = Glit.mouse().getX();
-            float y = Glit.mouse().getY();
-            dAngX += prevX - x;
-            dAngY += prevY - y;
+        if(Glit.window().isFocused()){
+            if(!doNotRotateThisFrame){
+                float x = Glit.mouse().getX();
+                float y = Glit.mouse().getY();
+                dAngX += prevX - x;
+                dAngY += prevY - y;
 
-            getRot().yaw += dAngX * 0.05;
-            getRot().pitch += dAngY * 0.05;
-            getRot().constrain();
+                getRot().yaw += dAngX * 0.05;
+                getRot().pitch += dAngY * 0.05;
+                getRot().constrain();
 
-            dAngX *= 0.1;
-            dAngY *= 0.1;
+                dAngX *= 0.1;
+                dAngY *= 0.1;
+            }
+            Glit.mouse().setPos(Glit.getWidth() / 2, Glit.getHeight() / 2);
+            prevX = Glit.getWidth() / 2F;
+            prevY = Glit.getHeight() / 2F;
+            doNotRotateThisFrame = false;
         }
-        Glit.mouse().setPos(Glit.getWidth() / 2, Glit.getHeight() / 2);
-        prevX = Glit.getWidth() / 2F;
-        prevY = Glit.getHeight() / 2F;
-        doNotRotateThisFrame = false;
 
 
         float speed = Glit.getDeltaTime() * 75;

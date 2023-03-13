@@ -2,13 +2,18 @@ package megalul.projectvostok;
 
 import glit.Glit;
 import glit.context.ContextListener;
+import glit.files.FileHandle;
 import glit.graphics.font.BitmapFont;
 import glit.graphics.font.FontLoader;
 import glit.graphics.util.Gl;
 import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
+import glit.util.time.Sync;
 
 public class Main implements ContextListener{
+
+    public static String GAME_DIR_PATH = "./";//System.getProperty("user.home") + "/.project_vostok/";
+
 
     public static void main(String[] args){
         Glit.create("Project Vostok", 1280, 720);
@@ -22,20 +27,21 @@ public class Main implements ContextListener{
     private GameCamera camera;
     private World world;
     private WorldRenderer renderer;
-
+    private Sync fpsSync;
 
     public void init(){
+        new FileHandle(GAME_DIR_PATH).mkdirs();
         uiBatch = new TextureBatch(150);
         font = FontLoader.getDefault();
 
-        options = new Options();
+        fpsSync = new Sync(0);
+        options = new Options(this, GAME_DIR_PATH);
+
         camera = new GameCamera(0.1, 1000, 110);
         camera.getPos().y = Chunk.HEIGHT;
         camera.getRot().set(0, 0, 0);
-        world = new World(this);
         renderer = new WorldRenderer(this);
-
-        Glit.mouse().show(false);
+        world = new World(this);
     }
 
     public void render(){
@@ -74,7 +80,11 @@ public class Main implements ContextListener{
     }
 
     public void dispose(){
+        uiBatch.dispose();
+        font.dispose();
         renderer.dispose();
+
+        options.save();
     }
 
 
@@ -88,6 +98,10 @@ public class Main implements ContextListener{
 
     public World getWorld(){
         return world;
+    }
+
+    public Sync getFpsSync(){
+        return fpsSync;
     }
 
 }
