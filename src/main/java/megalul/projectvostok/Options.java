@@ -31,8 +31,7 @@ public class Options{
         keyMappings = new HashMap<>();
 
         optionsFile = new FileHandle(gameDirPath + "options.txt", true);
-        if(!optionsFile.exists())
-            optionsFile.create();
+        optionsFile.create();
 
         load();
         init();
@@ -79,7 +78,9 @@ public class Options{
                         }
                     }
                 }
-            }catch(IllegalArgumentException ignored){ }
+            }catch(IllegalArgumentException e){
+                System.out.println(e);
+            }
         }
 
         in.close();
