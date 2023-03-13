@@ -51,7 +51,7 @@ public class Options{
             if(parts.length != 2)
                 continue;
 
-            String value = parts[1];
+            String value = parts[1].trim();
 
             String[] keyParts = parts[0].split("\\.");
             if(keyParts.length != 2)
