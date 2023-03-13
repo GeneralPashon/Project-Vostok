@@ -58,9 +58,6 @@ public class Main implements ContextListener{
         font.drawText(uiBatch, "load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
         font.drawText(uiBatch, "unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
         font.drawText(uiBatch, "build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
-        font.drawText(uiBatch, "(WASD + (CTRL))", 25, 25);
-        font.drawText(uiBatch, "(Scroll for scaling)", 25, 25 + font.getScaledLineHeight());
-        font.drawText(uiBatch, "(Mouse for moving camera)", 25, 25 + font.getScaledLineHeight() * 2);
         uiBatch.end();
     }
 
