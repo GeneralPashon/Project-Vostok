@@ -47,7 +47,6 @@ public class Options{
         String[] lines = optionsFile.readString().split("\n");
 
         for(String line: lines){
-            System.out.println(line);
             String[] parts = line.split(" : ");
             if(parts.length != 2)
                 continue;
@@ -57,6 +56,8 @@ public class Options{
             parts = parts[0].split("\\.");
             if(parts.length != 2)
                 continue;
+
+            System.out.println(parts[0] + "/" + parts[1] + "/" + value);
 
             String category = parts[0];
             String key = parts[1];
