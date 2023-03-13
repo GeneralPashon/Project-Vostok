@@ -57,8 +57,6 @@ public class Options{
             if(parts.length != 2)
                 continue;
 
-            System.out.println(parts[0] + "/" + parts[1] + "/" + value);
-
             String category = parts[0];
             String key = parts[1];
 
@@ -66,7 +64,10 @@ public class Options{
             switch(category){
                 case "graphics" -> {
                     switch(key){
-                        case "fov" -> fov = Integer.parseInt(value);
+                        case "fov" ->{
+                            System.out.println(value + ": isDecimal: " + (value.matches("\\d+")));
+                            fov = Integer.parseInt(value);
+                        }
                         case "renderDistance" -> renderDistance = Integer.parseInt(value);
                         case "maxFramerate" -> maxFramerate = Integer.parseInt(value);
                         case "fullscreen" -> fullscreen = Boolean.parseBoolean(value);
