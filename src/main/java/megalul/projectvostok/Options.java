@@ -3,6 +3,8 @@ package megalul.projectvostok;
 import glit.Glit;
 import glit.files.FileHandle;
 import glit.io.glfw.Key;
+import org.w3c.dom.ls.LSOutput;
+
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class Options{
         String[] lines = optionsFile.readString().split("\n");
 
         for(String line: lines){
+            System.out.println(line);
             String[] parts = line.split(" : ");
             if(parts.length != 2)
                 continue;
