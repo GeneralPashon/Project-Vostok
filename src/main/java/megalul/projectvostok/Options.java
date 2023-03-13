@@ -79,7 +79,7 @@ public class Options{
                     }
                 }
             }catch(IllegalArgumentException e){
-                System.out.println(e);
+                e.printStackTrace();
             }
         }
 
