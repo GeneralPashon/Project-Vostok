@@ -25,11 +25,9 @@ public class GameCamera extends PerspectiveCamera{
             dAngX += prevX - x;
             dAngY += prevY - y;
 
-            getRot().yaw += dAngX * 0.3;
-            getRot().pitch += dAngY * 0.3;
+            getRot().yaw += dAngX * 0.05;
+            getRot().pitch += dAngY * 0.05;
             getRot().constrain();
-
-            System.out.println(dAngX * 0.3 + " " + (dAngY * 0.3));
 
             dAngX *= 0.1;
             dAngY *= 0.1;
@@ -40,7 +38,10 @@ public class GameCamera extends PerspectiveCamera{
         doNotRotateThisFrame = false;
 
 
-        float speed = 0.2F;
+        float speed = Glit.getDeltaTime() * 75;
+        if(Glit.isPressed(Key.LEFT_CONTROL))
+            speed *= 3;
+
         Vec3f dir = getRot().direction();
         Vec3f acceleration = dir.clone();
         acceleration.y = 0;

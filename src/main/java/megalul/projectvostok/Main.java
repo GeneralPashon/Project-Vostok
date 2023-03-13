@@ -17,9 +17,6 @@ public class Main implements ContextListener{
         Glit.init(new Main());
     }
 
-
-    private TextureBatch batch;
-
     private TextureBatch uiBatch;
     private BitmapFont font;
 
@@ -32,7 +29,6 @@ public class Main implements ContextListener{
     public void init(){
         // Gl.enable(Target.DEPTH_TEST);
 
-        batch = new TextureBatch(10000);
         uiBatch = new TextureBatch(150);
         font = FontLoader.getDefault();
 
@@ -65,6 +61,7 @@ public class Main implements ContextListener{
         font.drawText(uiBatch, "update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 3);
         font.drawText(uiBatch, "load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
         font.drawText(uiBatch, "unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
+        font.drawText(uiBatch, "build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
         font.drawText(uiBatch, "(WASD + (CTRL))", 25, 25);
         font.drawText(uiBatch, "(Scroll for scaling)", 25, 25 + font.getScaledLineHeight());
         font.drawText(uiBatch, "(Mouse for moving camera)", 25, 25 + font.getScaledLineHeight() * 2);
@@ -84,7 +81,6 @@ public class Main implements ContextListener{
     }
 
     public void dispose(){
-        batch.dispose();
         renderer.dispose();
     }
 

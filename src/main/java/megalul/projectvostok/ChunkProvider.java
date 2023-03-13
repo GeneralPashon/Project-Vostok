@@ -28,8 +28,8 @@ public class ChunkProvider{
     private final ConcurrentMap<ChunkPos, float[]> builtChunksList;
     private final ConcurrentMap<ChunkPos, ChunkMesh> meshList;
 
-    public final FpsCounter updateTps, loadTps, unloadTps;
-    private final Sync updateSync, loadSync, unloadSync;
+    public final FpsCounter updateTps, loadTps, unloadTps, buildTps;
+    private final Sync updateSync, loadSync, unloadSync, buildSync;
 
 
     public ChunkProvider(Main session){
@@ -47,10 +47,12 @@ public class ChunkProvider{
         updateTps = new FpsCounter();
         loadTps = new FpsCounter();
         unloadTps = new FpsCounter();
+        buildTps = new FpsCounter();
 
         updateSync = new Sync(40);
         loadSync = new Sync(40);
         unloadSync = new Sync(40);
+        buildSync = new Sync(40);
 
         Thread updateThread = new Thread(()->{
             while(!Thread.currentThread().isInterrupted()){
@@ -84,8 +86,8 @@ public class ChunkProvider{
 
         Thread updateThread2 = new Thread(()->{
             while(!Thread.currentThread().isInterrupted()){
-                // updateTps.update();
-                // updateSync.sync();
+                buildTps.update();
+                buildSync.sync();
                 buildChunks();
             }
         }, "Build Chunks Thread");
@@ -158,6 +160,8 @@ public class ChunkProvider{
         for(Chunk chunk: chunksToBuildQueue){
             float[] vertices = ChunkBuilder.build(chunk);
             builtChunksList.put(chunk.getPos(), vertices);
+
+            chunksToBuildQueue.remove(chunk);
         }
     }
 
@@ -185,8 +189,16 @@ public class ChunkProvider{
 
 
     public void updateMeshes(){
-        for(Map.Entry<ChunkPos, float[]> entry: builtChunksList.entrySet())
+        for(Map.Entry<ChunkPos, float[]> entry: builtChunksList.entrySet()){
             loadChunkMesh(entry.getKey(), entry.getValue());
+            builtChunksList.remove(entry.getKey());
+        }
+
+        for(ChunkPos chunkPos: meshList.keySet())
+            if(loadedChunkList.get(chunkPos) == null){
+                meshList.get(chunkPos).dispose();
+                meshList.remove(chunkPos);
+            }
     }
 
     public void loadChunkMesh(ChunkPos chunkPos, float[] vertices){

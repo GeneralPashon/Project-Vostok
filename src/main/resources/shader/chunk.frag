@@ -1,7 +1,7 @@
 #version 330
 
 in vec4 color;
-in vec2 uv;
+centroid in vec2 uv;
 
 uniform sampler2D u_atlas;
 

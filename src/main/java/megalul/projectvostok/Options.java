@@ -3,7 +3,7 @@ package megalul.projectvostok;
 public class Options{
 
     public int getRenderDistance(){
-        return 8;
+        return 24;
     }
 
 }
