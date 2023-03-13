@@ -31,7 +31,8 @@ public class Options{
         keyMappings = new HashMap<>();
 
         optionsFile = new FileHandle(gameDirPath + "options.txt", true);
-        optionsFile.create();
+        if(!optionsFile.exists())
+            optionsFile.create();
 
         load();
         init();
