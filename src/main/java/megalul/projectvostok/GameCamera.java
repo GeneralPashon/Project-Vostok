@@ -2,8 +2,8 @@ package megalul.projectvostok;
 
 import glit.Glit;
 import glit.graphics.camera.PerspectiveCamera;
-import glit.io.glfw.Key;
 import glit.math.vecmath.vector.Vec3f;
+import megalul.projectvostok.options.KeyMapping;
 
 public class GameCamera extends PerspectiveCamera{
 

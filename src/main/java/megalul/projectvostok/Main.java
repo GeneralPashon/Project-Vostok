@@ -9,6 +9,10 @@ import glit.graphics.util.Gl;
 import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
 import glit.util.time.Sync;
+import megalul.projectvostok.chunk.Chunk;
+import megalul.projectvostok.options.Options;
+import megalul.projectvostok.world.World;
+import megalul.projectvostok.world.WorldRenderer;
 
 public class Main implements ContextListener{
 
