@@ -10,9 +10,9 @@ public class ChunkBuilder{
     private static final List<Float> verticesList = new ArrayList<>();
 
     public static float[] build(Chunk chunk){
-        for(int i = 0; i < ChunkUtils.SIZE_XZ; i++)
+        for(int i = 0; i < ChunkUtils.SIZE; i++)
             for(int j = 0; j < ChunkUtils.HEIGHT; j++)
-                for(int k = 0; k < ChunkUtils.SIZE_XZ; k++)
+                for(int k = 0; k < ChunkUtils.SIZE; k++)
                     if(chunk.getBlocks().get(i, j, k).type != BlockType.AIR)
                         addFace(i, j, k);
 

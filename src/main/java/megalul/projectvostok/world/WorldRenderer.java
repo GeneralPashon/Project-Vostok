@@ -47,7 +47,7 @@ public class WorldRenderer implements Disposable{
             ChunkPos chunkPos = entry.getKey();
             if(!chunkPos.isInFrustum(session.getCamera()))
                 continue;
-            chunkShader.setUniform("u_model", new Matrix4f().toTranslated(new Vec3f(chunkPos.x, 0, chunkPos.z).mul(ChunkUtils.SIZE_XZ)));
+            chunkShader.setUniform("u_model", new Matrix4f().toTranslated(new Vec3f(chunkPos.x, 0, chunkPos.z).mul(ChunkUtils.SIZE)));
             entry.getValue().render();
         }
     }

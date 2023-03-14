@@ -10,6 +10,7 @@ import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
 import glit.util.time.Sync;
 import megalul.projectvostok.chunk.Chunk;
+import megalul.projectvostok.chunk.ChunkUtils;
 import megalul.projectvostok.options.Options;
 import megalul.projectvostok.world.World;
 import megalul.projectvostok.world.WorldRenderer;
@@ -42,7 +43,7 @@ public class Main implements ContextListener{
         options = new Options(this, GAME_DIR_PATH);
 
         camera = new GameCamera(this, 0.1, 1000, 110);
-        camera.getPos().y = Chunk.HEIGHT;
+        camera.getPos().y = ChunkUtils.HEIGHT;
         camera.getRot().set(0, 0, 0);
         renderer = new WorldRenderer(this);
         world = new World(this);
@@ -77,8 +78,10 @@ public class Main implements ContextListener{
     private void controls(){
         if(Glit.isDown(Key.ESCAPE))
             Glit.exit();
-        if(Glit.isDown(Key.F11))
+        if(Glit.isDown(Key.F11)){
+            camera.lockNextFrameRotate();
             Glit.window().toggleFullscreen();
+        }
     }
 
 

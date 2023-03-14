@@ -16,7 +16,6 @@ public class ChunkProvider{
 
     public static final Chunk EMPTY_CHUNK = null;
     private static final int MAX_LOADS_PER_TICK = 64;
-    private static final int MAX_UPDATES_PER_TICK = 128;
 
     private final Main session;
 
@@ -105,12 +104,8 @@ public class ChunkProvider{
         int endX = beginX + 1 + renderDist * 2;
         int endZ = beginZ + 1 + renderDist * 2;
 
-        int updatedChunksNum = 0;
-        cycle: for(int x = beginX; x < endX; x++){
+        for(int x = beginX; x < endX; x++){
             for(int z = beginZ; z < endZ; z++){
-                //if(updatedChunksNum >= MAX_UPDATES_PER_TICK)
-                //    break cycle;
-
                 if(isOffTheGrid(x, z))
                     continue;
 
@@ -123,7 +118,6 @@ public class ChunkProvider{
                     continue;
 
                 chunksToLoadQueue.add(chunkPos);
-                updatedChunksNum++;
             }
         }
 
@@ -237,7 +231,7 @@ public class ChunkProvider{
     }
 
     private Vec3f getCamPos(){
-        return session.getCamera().getPos().clone().div(Chunk.SIZE_XZ);
+        return session.getCamera().getPos().clone().div(ChunkUtils.SIZE);
     }
 
 }

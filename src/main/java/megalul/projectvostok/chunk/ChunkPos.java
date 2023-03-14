@@ -4,6 +4,9 @@ import megalul.projectvostok.GameCamera;
 
 import java.util.Objects;
 
+import static megalul.projectvostok.chunk.ChunkUtils.HEIGHT;
+import static megalul.projectvostok.chunk.ChunkUtils.SIZE;
+
 public class ChunkPos{
 
     public final int x, z;
@@ -16,8 +19,8 @@ public class ChunkPos{
 
     public boolean isInFrustum(GameCamera camera){
         return camera.getFrustum().isBoxInFrustum(
-            x * Chunk.SIZE_XZ, 0, z * Chunk.SIZE_XZ,
-            x * Chunk.SIZE_XZ + Chunk.SIZE_XZ, Chunk.HEIGHT, z * Chunk.SIZE_XZ + Chunk.SIZE_XZ
+            x * SIZE, 0, z * SIZE,
+            x * SIZE + SIZE, HEIGHT, z * SIZE + SIZE
         );
     }
 

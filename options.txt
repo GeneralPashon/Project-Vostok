@@ -9,8 +9,8 @@ key.left : a
 key.back : s
 key.right : d
 key.jump : space
-key.sneak : left_control
-key.sprint : left_shift
+key.sneak : left_shift
+key.sprint : left_control
 key.chat : t
 key.zoom : c
 key.fullscreen : f11

@@ -10,26 +10,26 @@ public class GameCamera extends PerspectiveCamera{
     private final Main session;
 
     private final Vec3f up = new Vec3f(0, 1, 0);
-    private float dAngX, dAngY, prevX, prevY;
-    private boolean doNotRotateThisFrame;
+    private float dAngX, dAngY;
+    private boolean doNotRotateInTheNextFrame;
 
     public GameCamera(Main session, double near, double far, double fieldOfView){
         super(near, far, fieldOfView);
 
         this.session = session;
 
-        doNotRotateThisFrame = true;
+        doNotRotateInTheNextFrame = true;
         Glit.mouse().show(false);
     }
 
 
     public void update(){
-        if(Glit.window().isFocused()){
-            if(!doNotRotateThisFrame){
+        if(Glit.window().isFocused() && Glit.mouse().inWindow()){
+            if(!doNotRotateInTheNextFrame){
                 float x = Glit.mouse().getX();
                 float y = Glit.mouse().getY();
-                dAngX += prevX - x;
-                dAngY += prevY - y;
+                dAngX += Glit.getWidth() / 2F - x;
+                dAngY += Glit.getHeight() / 2F - y;
 
                 float sensitivity = session.getOptions().getMouseSensitivity();
                 getRot().yaw += dAngX * 0.1 * sensitivity;
@@ -40,9 +40,7 @@ public class GameCamera extends PerspectiveCamera{
                 dAngY *= 0.1;
             }
             Glit.mouse().setPos(Glit.getWidth() / 2, Glit.getHeight() / 2);
-            prevX = Glit.getWidth() / 2F;
-            prevY = Glit.getHeight() / 2F;
-            doNotRotateThisFrame = false;
+            doNotRotateInTheNextFrame = false;
         }
 
 
@@ -71,6 +69,10 @@ public class GameCamera extends PerspectiveCamera{
             getPos().y -= speed;
 
         super.update();
+    }
+
+    public void lockNextFrameRotate(){
+        doNotRotateInTheNextFrame = true;
     }
 
     private boolean isPressed(KeyMapping key){

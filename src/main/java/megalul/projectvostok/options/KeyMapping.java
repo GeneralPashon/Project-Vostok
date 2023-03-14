@@ -9,8 +9,8 @@ public enum KeyMapping implements Option<Key>{
     BACK      (Key.S),
     RIGHT     (Key.D),
     JUMP      (Key.SPACE),
-    SNEAK     (Key.LEFT_CONTROL),
-    SPRINT    (Key.LEFT_SHIFT),
+    SNEAK     (Key.LEFT_SHIFT),
+    SPRINT    (Key.LEFT_CONTROL),
 
     CHAT      (Key.T),
     ZOOM      (Key.C),

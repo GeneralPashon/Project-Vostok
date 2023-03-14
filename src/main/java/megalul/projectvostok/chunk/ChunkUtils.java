@@ -5,29 +5,33 @@ import megalul.projectvostok.block.BlockType;
 
 public class ChunkUtils{
 
-    public static final int HEIGHT = 256;
-    public static final int SIZE_XZ = 16;
-    public static final int SIZE_2D = SIZE_XZ * SIZE_XZ;
-    public static final int SIZE_3D = SIZE_2D * HEIGHT;
+    public static int SIZE = 16;
+    public static int HEIGHT = 256;
+
+    // C = data Container
+    public static final int C_HEIGHT = HEIGHT + 2;
+    public static final int C_SIZE = SIZE + 2;
+    public static final int C_SIZE_2D = C_SIZE * C_SIZE;
+    public static final int C_SIZE_3D = C_SIZE_2D * C_HEIGHT;
 
     public static final BlockState AIR = new BlockState(BlockType.AIR);
 
 
     public static int getIndex(int x, int y, int z){
-        return x + (z + y * SIZE_XZ) * SIZE_XZ;
+        return (x + 1) + ((z + 1) + (y + 1) * C_SIZE) * C_SIZE;
     }
 
     public static int getIndex(int x, int z){
-        return x + z * SIZE_XZ;
+        return x + z * SIZE;
     }
 
 
     public static boolean isOutOfBounds(int x, int y, int z){
-        return x >= SIZE_XZ || y >= HEIGHT || z >= SIZE_XZ || x < 0 || y < 0 || z < 0;
+        return x >= SIZE || y >= HEIGHT || z >= SIZE || x < 0 || y < 0 || z < 0;
     }
 
     public static boolean isOutOfBounds(int x, int z){
-        return x >= SIZE_XZ || z >= SIZE_XZ || x < 0 || z < 0;
+        return x >= SIZE || z >= SIZE || x < 0 || z < 0;
     }
 
 }
