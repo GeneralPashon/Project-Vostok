@@ -3,6 +3,7 @@ package megalul.projectvostok.world;
 import glit.Glit;
 import glit.context.Disposable;
 import glit.files.FileHandle;
+import glit.graphics.texture.Pixmap;
 import glit.graphics.texture.Texture;
 import glit.graphics.util.Shader;
 import glit.io.glfw.Key;
@@ -26,7 +27,12 @@ public class WorldRenderer implements Disposable{
         this.session = session;
 
         chunkShader = new Shader(new FileHandle("shader/chunk.vert"), new FileHandle("shader/chunk.frag"));
-        atlasTexture = new Texture("texture/stone.png");
+
+        Pixmap pixmap = new Pixmap(16, 16);
+        pixmap.clear(0, 0, 0, 1F);
+        pixmap.fill(1, 1, 14, 14, 0, 0.75F, 0, 1F);
+
+        atlasTexture = new Texture(pixmap);
     }
 
     boolean render = true;

@@ -17,7 +17,7 @@ public class DefaultGenerator implements ChunkGenerator{
     public void generate(Chunk chunk){
         for(int i = 0; i < 16; i++)
             for(int j = 0; j < 16; j++){
-                int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * 24 + 64);
+                int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * 16 + 128);
                 chunk.getBlocks().set(i, y, j, new BlockState(Block.DIRT));
             }
     }

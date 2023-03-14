@@ -21,6 +21,8 @@ public class ChunkBuilder{
                     addPxFace(x, y, z);
                     addNyFace(x, y, z);
                     addPyFace(x, y, z);
+                    addNzFace(x, y, z);
+                    addPzFace(x, y, z);
                 }
 
         float[] array = new float[verticesList.size()];
@@ -67,6 +69,25 @@ public class ChunkBuilder{
         addVertex(x  ,y+1,z+1, 1,1,1,1, 0,1); // 0 ,0,16, 1,1,1,1, 0,1,
         addVertex(x  ,y+1,z  , 1,1,1,1, 0,0); // 0 ,0,0 , 1,1,1,1, 0,0,
     }
+
+    private static void addNzFace(int x, int y, int z){
+        addVertex(x  ,y  ,z  , 1,1,1,1, 0,0);
+        addVertex(x+1,y  ,z  , 1,1,1,1, 1,0);
+        addVertex(x+1,y+1,z  , 1,1,1,1, 1,1);
+        addVertex(x+1,y+1,z  , 1,1,1,1, 1,1);
+        addVertex(x  ,y+1,z  , 1,1,1,1, 0,1);
+        addVertex(x  ,y  ,z  , 1,1,1,1, 0,0);
+    }
+
+    private static void addPzFace(int x, int y, int z){
+        addVertex(x+1,y  ,z+1, 1,1,1,1, 0,0);
+        addVertex(x  ,y  ,z+1, 1,1,1,1, 1,0);
+        addVertex(x  ,y+1,z+1, 1,1,1,1, 1,1);
+        addVertex(x  ,y+1,z+1, 1,1,1,1, 1,1);
+        addVertex(x+1,y+1,z+1, 1,1,1,1, 0,1);
+        addVertex(x+1,y  ,z+1, 1,1,1,1, 0,0);
+    }
+
 
     private static void addVertex(float x, float y, float z, float r, float g, float b, float a, float u, float v){
         verticesList.add(x);

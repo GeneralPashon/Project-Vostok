@@ -23,7 +23,7 @@ public class Main implements ContextListener{
     public static void main(String[] args){
         Glit.create("Project Vostok", 1280, 720);
 
-        // Gl.enable(Target.DEPTH_TEST);
+        Gl.enable(Target.DEPTH_TEST);
 
         Glit.init(new Main());
     }
@@ -54,8 +54,8 @@ public class Main implements ContextListener{
 
     public void render(){
         controls();
+        Gl.clearBuffer(true);
         Gl.clearColor(0.4, 0.7, 0.9);
-        Gl.clearBufferColor();
 
         camera.update();
         getWorld().getChunks().updateMeshes();
