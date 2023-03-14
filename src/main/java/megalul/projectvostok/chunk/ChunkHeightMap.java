@@ -5,7 +5,7 @@ public class ChunkHeightMap extends ChunkUtils{
     private final short[] heights;
 
     public ChunkHeightMap(){
-        heights = new short[C_SIZE_2D];
+        heights = new short[SIZE_2D];
     }
 
 

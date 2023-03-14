@@ -145,9 +145,9 @@ public class ChunkProvider{
     public void unloadChunks(){
         chunkLoadQueue.removeIf(this::isOffTheGrid);
 
-        for(ChunkPos chunkPos: loadedChunkList.keySet())
-            if(isOffTheGrid(chunkPos))
-                unloadChunk(chunkPos);
+        for(Chunk chunk: loadedChunkList.values())
+            if(isOffTheGrid(chunk.getPos()))
+                unloadChunk(chunk);
     }
 
     private void buildChunks(){
@@ -161,15 +161,37 @@ public class ChunkProvider{
 
 
     public void loadChunk(ChunkPos chunkPos){
-        Chunk chunk = new Chunk(chunkPos);
-        ChunkGenerator.generate(chunk);
+        Chunk chunk = new Chunk(this, chunkPos);
+        DefaultGenerator.getInstance().generate(chunk);
 
         chunksToBuildQueue.add(chunk);
         loadedChunkList.put(chunkPos, chunk);
+
+        updateNeighbors(chunk, true);
     }
 
-    public void unloadChunk(ChunkPos chunkPos){
-        loadedChunkList.remove(chunkPos);
+    public void unloadChunk(Chunk chunk){
+        loadedChunkList.remove(chunk.getPos());
+        updateNeighbors(chunk, false);
+    }
+
+    private void updateNeighbors(Chunk chunk, boolean loaded){
+        final ChunkPos chunkPos = chunk.getPos();
+
+        final Chunk nx = loadedChunkList.get(chunkPos.neighbor(-1, 0));
+        final Chunk px = loadedChunkList.get(chunkPos.neighbor(1, 0));
+        final Chunk nz = loadedChunkList.get(chunkPos.neighbor(0, -1));
+        final Chunk pz = loadedChunkList.get(chunkPos.neighbor(0, 1));
+
+        chunk.neighbors.set(0, nx != null);
+        chunk.neighbors.set(1, px != null);
+        chunk.neighbors.set(2, nz != null);
+        chunk.neighbors.set(3, pz != null);
+
+        if(nx != null) nx.neighbors.set(1, loaded);
+        if(px != null) px.neighbors.set(0, loaded);
+        if(nz != null) nz.neighbors.set(3, loaded);
+        if(pz != null) pz.neighbors.set(2, loaded);
     }
 
 

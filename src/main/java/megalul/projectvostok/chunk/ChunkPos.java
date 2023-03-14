@@ -24,6 +24,10 @@ public class ChunkPos{
         );
     }
 
+    public ChunkPos neighbor(int x, int z){
+        return new ChunkPos(this.x + x, this.z + z);
+    }
+
 
     @Override
     public boolean equals(Object object){

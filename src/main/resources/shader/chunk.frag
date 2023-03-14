@@ -6,5 +6,9 @@ centroid in vec2 uv;
 uniform sampler2D u_atlas;
 
 void main(){
-    gl_FragColor = texture(u_atlas, uv) * color;
+    vec4 color = texture(u_atlas, uv) * color;
+    if(color.a <= 0)
+        discard;
+
+    gl_FragColor = color;
 }

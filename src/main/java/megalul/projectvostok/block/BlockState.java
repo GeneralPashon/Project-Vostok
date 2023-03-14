@@ -3,22 +3,22 @@ package megalul.projectvostok.block;
 public class BlockState{
 
     private final short state; // 8bits=data, 8bits=id
-    public final BlockType type;
+    public final Block type;
     public final byte extraData;
 
     public BlockState(short state){
         this.state = state;
-        type = BlockType.fromID(getIDFromState(state));
+        type = Block.fromID(getIDFromState(state));
         extraData = getExtraDataFromState(state);
     }
 
-    public BlockState(BlockType type, byte extraData){
+    public BlockState(Block type, byte extraData){
         this.type = type;
         this.extraData = extraData;
         state = getState(type.id, extraData);
     }
 
-    public BlockState(BlockType type){
+    public BlockState(Block type){
         this.type = type;
         this.extraData = (byte) 0;
         state = getState(type.id, extraData);

@@ -64,11 +64,7 @@ public class Options{
             switch(category){
                 case "graphics" -> {
                     switch(key){
-                        case "fov" ->{
-                            System.out.println(value);
-                            System.out.println("|"+value+"|");
-                            fov = Integer.parseInt(value);
-                        }
+                        case "fov" -> fov = Integer.parseInt(value);
                         case "renderDistance" -> renderDistance = Integer.parseInt(value);
                         case "maxFramerate" -> maxFramerate = Integer.parseInt(value);
                         case "fullscreen" -> fullscreen = Boolean.parseBoolean(value);

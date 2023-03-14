@@ -44,7 +44,7 @@ public class GameCamera extends PerspectiveCamera{
         }
 
 
-        float speed = Glit.getDeltaTime() * 75;
+        float speed = Glit.getDeltaTime() * 15;
         if(isPressed(KeyMapping.SPRINT))
             speed *= 3;
 
@@ -58,7 +58,9 @@ public class GameCamera extends PerspectiveCamera{
         if(isPressed(KeyMapping.BACK))
             getPos().sub(acceleration);
 
-        Vec3f sideMove = Vec3f.crs(up, dir).mul(speed);
+        Vec3f dirXZ = dir.clone();
+        dirXZ.y = 0;
+        Vec3f sideMove = Vec3f.crs(up, dirXZ.nor()).mul(speed);
         if(isPressed(KeyMapping.RIGHT))
             getPos().add(sideMove);
         if(isPressed(KeyMapping.LEFT))

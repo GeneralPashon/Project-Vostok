@@ -5,11 +5,11 @@ import glit.context.ContextListener;
 import glit.files.FileHandle;
 import glit.graphics.font.BitmapFont;
 import glit.graphics.font.FontLoader;
+import glit.graphics.gl.Target;
 import glit.graphics.util.Gl;
 import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
 import glit.util.time.Sync;
-import megalul.projectvostok.chunk.Chunk;
 import megalul.projectvostok.chunk.ChunkUtils;
 import megalul.projectvostok.options.Options;
 import megalul.projectvostok.world.World;
@@ -22,6 +22,9 @@ public class Main implements ContextListener{
 
     public static void main(String[] args){
         Glit.create("Project Vostok", 1280, 720);
+
+        // Gl.enable(Target.DEPTH_TEST);
+
         Glit.init(new Main());
     }
 
@@ -67,11 +70,14 @@ public class Main implements ContextListener{
         uiBatch.begin();
         uiBatch.setColor(0.5F, 0.4F, 0.1F, 1);
         font.drawText(uiBatch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight());
-        font.drawText(uiBatch, "ChunkProvider Threads:", 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 2);
-        font.drawText(uiBatch, "update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 3);
-        font.drawText(uiBatch, "load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
-        font.drawText(uiBatch, "unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
-        font.drawText(uiBatch, "build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
+        font.drawText(uiBatch,
+                "position: " + camera.getPos().x() + ", " + camera.getPos().y() + ", " + camera.getPos().z(),
+                25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 2);
+        font.drawText(uiBatch, "Threads:", 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 3);
+        font.drawText(uiBatch, "chunk update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
+        font.drawText(uiBatch, "chunk load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
+        font.drawText(uiBatch, "chunk unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
+        font.drawText(uiBatch, "chunk build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 7);
         uiBatch.end();
     }
 

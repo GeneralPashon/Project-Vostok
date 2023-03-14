@@ -1,20 +1,16 @@
 package megalul.projectvostok.chunk;
 
-import megalul.projectvostok.block.BlockState;
-import megalul.projectvostok.block.BlockType;
-
 public class ChunkUtils{
 
     public static int SIZE = 16;
     public static int HEIGHT = 256;
+    public static int SIZE_2D = SIZE * SIZE;
 
     // C = data Container
     public static final int C_HEIGHT = HEIGHT + 2;
     public static final int C_SIZE = SIZE + 2;
     public static final int C_SIZE_2D = C_SIZE * C_SIZE;
     public static final int C_SIZE_3D = C_SIZE_2D * C_HEIGHT;
-
-    public static final BlockState AIR = new BlockState(BlockType.AIR);
 
 
     public static int getIndex(int x, int y, int z){

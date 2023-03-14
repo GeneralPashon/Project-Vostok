@@ -1,13 +1,23 @@
 package megalul.projectvostok.chunk;
 
+import java.util.BitSet;
+
 public class Chunk{
+
+    protected final ChunkProvider providerOf;
 
     private final ChunkPos position;
     private final ChunkField blocks;
+    protected volatile BitSet neighbors;
 
-    public Chunk(ChunkPos position){
+
+    public Chunk(ChunkProvider providerOf, ChunkPos position){
+        this.providerOf = providerOf;
+
         this.position = position;
-        blocks = new ChunkField();
+        blocks = new ChunkField(this);
+
+        neighbors = new BitSet(4); // +z, -z, +x, -x
     }
 
 
