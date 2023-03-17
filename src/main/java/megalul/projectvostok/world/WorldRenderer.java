@@ -1,12 +1,10 @@
 package megalul.projectvostok.world;
 
-import glit.Glit;
 import glit.context.Disposable;
 import glit.files.FileHandle;
 import glit.graphics.texture.Pixmap;
 import glit.graphics.texture.Texture;
 import glit.graphics.util.Shader;
-import glit.io.glfw.Key;
 import glit.math.vecmath.matrix.Matrix4f;
 import glit.math.vecmath.vector.Vec3f;
 import megalul.projectvostok.Main;
@@ -30,20 +28,12 @@ public class WorldRenderer implements Disposable{
 
         Pixmap pixmap = new Pixmap(16, 16);
         pixmap.clear(0, 0, 0, 1F);
-        pixmap.fill(1, 1, 14, 14, 0, 0.75F, 0, 1F);
+        pixmap.fill(1, 1, 14, 14, 1, 0.75F, 1, 1F);
 
         atlasTexture = new Texture(pixmap);
     }
 
-    boolean render = true;
-
-
     public void render(){
-        if(Glit.isDown(Key.R))
-            render = !render;
-        if(!render)
-            return;
-
         chunkShader.bind();
         chunkShader.setUniform("u_projection", session.getCamera().getProjection());
         chunkShader.setUniform("u_view", session.getCamera().getView());

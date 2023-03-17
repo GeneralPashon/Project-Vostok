@@ -5,11 +5,13 @@ import glit.context.ContextListener;
 import glit.files.FileHandle;
 import glit.graphics.font.BitmapFont;
 import glit.graphics.font.FontLoader;
-import glit.graphics.gl.Target;
-import glit.graphics.util.Gl;
+import glit.graphics.gl.*;
 import glit.graphics.util.batch.TextureBatch;
 import glit.io.glfw.Key;
+import glit.math.Maths;
+import glit.math.vecmath.vector.Vec3f;
 import glit.util.time.Sync;
+import megalul.projectvostok.block.Block;
 import megalul.projectvostok.chunk.ChunkUtils;
 import megalul.projectvostok.options.Options;
 import megalul.projectvostok.world.World;
@@ -74,10 +76,12 @@ public class Main implements ContextListener{
                 "position: " + camera.getPos().x() + ", " + camera.getPos().y() + ", " + camera.getPos().z(),
                 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 2);
         font.drawText(uiBatch, "Threads:", 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 3);
-        font.drawText(uiBatch, "chunk update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
+        font.drawText(uiBatch, "chunk find tps: " + world.getChunks().findTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
         font.drawText(uiBatch, "chunk load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
         font.drawText(uiBatch, "chunk unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
         font.drawText(uiBatch, "chunk build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 7);
+        font.drawText(uiBatch, "chunk update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 8);
+        font.drawText(uiBatch, "meshes: " + world.getChunks().getMeshes().size(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 9);
         uiBatch.end();
     }
 
@@ -88,6 +92,16 @@ public class Main implements ContextListener{
             camera.lockNextFrameRotate();
             Glit.window().toggleFullscreen();
         }
+        if(Glit.isDown(Key.NUM_1))
+            Gl.setPolygonMode(Face.FRONT, PolygonMode.FILL);
+        if(Glit.isDown(Key.NUM_2))
+            Gl.setPolygonMode(Face.FRONT, PolygonMode.LINE);
+        if(Glit.isDown(Key.NUM_3))
+            Gl.setPolygonMode(Face.FRONT, PolygonMode.POINT);
+
+        Vec3f camPos = camera.getPos();
+        if(Glit.isPressed(Key.B))
+            world.setBlock(camPos.x(), Maths.clamp(camPos.yf() - 2, 0, 255), camPos.z(), Block.DIRT.getState());
     }
 
 

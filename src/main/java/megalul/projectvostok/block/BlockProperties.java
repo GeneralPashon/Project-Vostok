@@ -12,6 +12,10 @@ public abstract class BlockProperties{
         return id;
     }
 
+    public boolean isEmpty(){
+        return id == Block.AIR.id;
+    }
+
     public abstract boolean isSolid();
 
 }

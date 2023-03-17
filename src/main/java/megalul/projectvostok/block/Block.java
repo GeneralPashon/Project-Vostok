@@ -9,10 +9,17 @@ public enum Block{
 
     public final int id;
     public final BlockProperties properties;
+    private final BlockState defaultState;
 
     Block(BlockProperties properties){
         this.id = properties.getID();
         this.properties = properties;
+
+        defaultState = new BlockState(this);
+    }
+
+    public BlockState getState(){
+        return defaultState;
     }
 
     public static Block fromID(int id){

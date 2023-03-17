@@ -1,7 +1,11 @@
 package megalul.projectvostok.world;
 
 import megalul.projectvostok.Main;
+import megalul.projectvostok.block.BlockState;
+import megalul.projectvostok.chunk.Chunk;
 import megalul.projectvostok.chunk.ChunkProvider;
+
+import static megalul.projectvostok.chunk.ChunkUtils.*;
 
 public class World{
 
@@ -11,10 +15,28 @@ public class World{
         chunkProvider = new ChunkProvider(session);
     }
 
-    public ChunkProvider getChunks(){
-        return chunkProvider;
+
+    public BlockState getBlock(int x, int y, int z){
+        Chunk targetChunk = getChunk(x, z);
+        if(targetChunk != null)
+            return targetChunk.getField().get(getLocalPos(x), y, getLocalPos(z));
+
+        return BlockState.AIR;
+    }
+
+    public void setBlock(int x, int y, int z, BlockState block){
+        Chunk targetChunk = getChunk(x, z);
+        if(targetChunk != null)
+            targetChunk.getField().set(getLocalPos(x), y, getLocalPos(z), block);
     }
 
 
+    public Chunk getChunk(int x, int z){
+        return chunkProvider.getChunk(getChunkPos(x), getChunkPos(z));
+    }
+
+    public ChunkProvider getChunks(){
+        return chunkProvider;
+    }
 
 }

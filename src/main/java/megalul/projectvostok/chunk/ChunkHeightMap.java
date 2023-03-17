@@ -1,6 +1,8 @@
 package megalul.projectvostok.chunk;
 
-public class ChunkHeightMap extends ChunkUtils{
+import static megalul.projectvostok.chunk.ChunkUtils.*;
+
+public class ChunkHeightMap{
 
     private final short[] heights;
 

@@ -2,6 +2,9 @@ package megalul.projectvostok.block;
 
 public class BlockState{
 
+    public static final BlockState AIR = new BlockState(Block.AIR);
+
+
     private final short state; // 8bits=data, 8bits=id
     public final Block type;
     public final byte extraData;
