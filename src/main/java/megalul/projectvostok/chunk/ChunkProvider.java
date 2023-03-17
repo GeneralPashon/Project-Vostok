@@ -179,6 +179,25 @@ public class ChunkProvider{
         }
     }
 
+    public void updateChunks(){
+        for(Chunk chunk: loadedChunkList.values())
+            if(chunk.getField().isDirty())
+                rebuildChunk(chunk);
+    }
+
+    public void updateMeshes(){
+        for(Map.Entry<Chunk, float[]> entry: builtChunksList.entrySet()){
+            updateMesh(entry.getKey(), entry.getValue());
+            builtChunksList.remove(entry.getKey());
+        }
+
+        for(ChunkPos chunkPos: meshList.keySet())
+            if(loadedChunkList.get(chunkPos) == null){
+                meshList.get(chunkPos).dispose();
+                meshList.remove(chunkPos);
+            }
+    }
+
 
     public void loadChunk(ChunkPos chunkPos){
         Chunk chunk = new Chunk(this, chunkPos);
@@ -193,6 +212,24 @@ public class ChunkProvider{
         loadedChunkList.remove(chunk.getPos());
         updateNeighborChunksEdgesAndSelf(chunk, false);
     }
+
+    public void updateMesh(Chunk chunk, float[] vertices){
+        ChunkMesh mesh = meshList.get(chunk.getPos());
+        if(mesh == null)
+            mesh = new ChunkMesh();
+        else
+            System.out.println("updated mesh");
+
+        mesh.setVertices(vertices);
+        meshList.put(chunk.getPos(), mesh);
+        chunk.getField().built();
+    }
+
+    public void rebuildChunk(Chunk chunk){
+        if(!chunksToBuildQueue.contains(chunk) && !builtChunksList.containsKey(chunk))
+            chunksToBuildQueue.add(chunk);
+    }
+
 
     private void updateNeighborChunksEdgesAndSelf(Chunk chunk, boolean loaded){
         Chunk neighbor = loadedChunkList.get(chunk.getPos().neighbor(-1, 0));
@@ -227,38 +264,6 @@ public class ChunkProvider{
                     if(loaded)
                         chunk.getField().set(i, y, SIZE, neighbor.getField().get(i, y, 0));
                 }
-    }
-
-
-    public void updateChunks(){
-        for(Chunk chunk: loadedChunkList.values())
-            if(chunk.getField().isDirty())
-                chunksToBuildQueue.add(chunk);
-    }
-
-    public void updateMeshes(){
-        for(Map.Entry<Chunk, float[]> entry: builtChunksList.entrySet()){
-            updateMesh(entry.getKey(), entry.getValue());
-            builtChunksList.remove(entry.getKey());
-        }
-
-        for(ChunkPos chunkPos: meshList.keySet())
-            if(loadedChunkList.get(chunkPos) == null){
-                meshList.get(chunkPos).dispose();
-                meshList.remove(chunkPos);
-            }
-    }
-
-    public void updateMesh(Chunk chunk, float[] vertices){
-        ChunkMesh mesh = meshList.get(chunk.getPos());
-        if(mesh == null)
-            mesh = new ChunkMesh();
-        else
-            System.out.println("UPDATED MESH");
-
-        mesh.setVertices(vertices);
-        meshList.put(chunk.getPos(), mesh);
-        chunk.getField().built();
     }
 
 

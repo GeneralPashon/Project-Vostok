@@ -1,5 +1,7 @@
 package megalul.projectvostok.chunk;
 
+import java.util.Objects;
+
 public class Chunk{
 
     protected final ChunkProvider providerOf;
@@ -22,6 +24,22 @@ public class Chunk{
 
     public ChunkField getField(){
         return blocks;
+    }
+
+
+    @Override
+    public boolean equals(Object object){
+        if(object == this)
+            return true;
+        if(object == null || object.getClass() != getClass())
+            return false;
+        Chunk chunk = (Chunk) object;
+        return position.equals(chunk.position);
+    }
+
+    @Override
+    public int hashCode(){
+        return position.hashCode();
     }
 
 }

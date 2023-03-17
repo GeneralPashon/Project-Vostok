@@ -41,7 +41,7 @@ public class Main implements ContextListener{
 
     public void init(){
         new FileHandle(GAME_DIR_PATH).mkdirs();
-        uiBatch = new TextureBatch(150);
+        uiBatch = new TextureBatch(200);
         font = FontLoader.getDefault();
 
         fpsSync = new Sync(0);
@@ -69,8 +69,9 @@ public class Main implements ContextListener{
         if(!options.isShowFPS())
             return;
 
-        uiBatch.begin();
         uiBatch.setColor(0.5F, 0.4F, 0.1F, 1);
+        uiBatch.begin();
+
         font.drawText(uiBatch, "fps: " + Glit.getFps(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight());
         font.drawText(uiBatch,
                 "position: " + camera.getPos().x() + ", " + camera.getPos().y() + ", " + camera.getPos().z(),
@@ -82,6 +83,10 @@ public class Main implements ContextListener{
         font.drawText(uiBatch, "chunk build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 7);
         font.drawText(uiBatch, "chunk update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 8);
         font.drawText(uiBatch, "meshes: " + world.getChunks().getMeshes().size(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 9);
+
+        font.drawText(uiBatch, "1, 2, 3 - set render mode", 25, 25 + font.getScaledLineHeight() * 0);
+        font.drawText(uiBatch, "B - set block in camera", 25, 25 + font.getScaledLineHeight() * 1);
+
         uiBatch.end();
     }
 
@@ -101,7 +106,7 @@ public class Main implements ContextListener{
 
         Vec3f camPos = camera.getPos();
         if(Glit.isPressed(Key.B))
-            world.setBlock(camPos.x(), Maths.clamp(camPos.yf() - 2, 0, 255), camPos.z(), Block.DIRT.getState());
+            world.setBlock(camPos.x(), Maths.clamp(camPos.yf(), 0, 255), camPos.z(), Block.DIRT.getState());
     }
 
 

@@ -29,12 +29,9 @@ public class ChunkField{
         byte oldID = BlockState.getIDFromState(blocks[getIndex(x, y, z)]);
         blocks[getIndex(x, y, z)] = block.getState();
 
-        if(oldID != block.type.id){
+        if(oldID != block.type.id && !isOutOfBounds(x, z)){
             dirty = true;
-
-            if(!isOutOfBounds(x, z))
-                updateHeight(x, y, z, block.type != Block.AIR);
-
+            updateHeight(x, y, z, block.type != Block.AIR);
             updateEdgesOfNeighborChunks(x, y, z, block);
         }
     }
@@ -60,21 +57,29 @@ public class ChunkField{
     private void updateEdgesOfNeighborChunks(int x, int y, int z, BlockState block){
         if(x == 0){
             Chunk neighbor = getNeighbor(-1, 0);
-            if(neighbor != null)
+            if(neighbor != null){
                 neighbor.getField().set(SIZE, y, z, block);
+                chunkOf.providerOf.rebuildChunk(neighbor);
+            }
         }else if(x == SIZE_IDX){
             Chunk neighbor = getNeighbor(1, 0);
-            if(neighbor != null)
+            if(neighbor != null){
                 neighbor.getField().set(-1, y, z, block);
+                chunkOf.providerOf.rebuildChunk(neighbor);
+            }
         }
         if(z == 0){
             Chunk neighbor = getNeighbor(0, -1);
-            if(neighbor != null)
+            if(neighbor != null){
                 neighbor.getField().set(x, y, SIZE, block);
+                chunkOf.providerOf.rebuildChunk(neighbor);
+            }
         }else if(z == SIZE_IDX){
             Chunk neighbor = getNeighbor(0 , 1);
-            if(neighbor != null)
+            if(neighbor != null){
                 neighbor.getField().set(x, y, -1, block);
+                chunkOf.providerOf.rebuildChunk(neighbor);
+            }
         }
     }
 
