@@ -1,4 +1,4 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.chunk.data;
 
 import megalul.projectvostok.GameCamera;
 
@@ -24,7 +24,7 @@ public class ChunkPos{
         );
     }
 
-    public ChunkPos neighbor(int x, int z){
+    public ChunkPos getNeighbor(int x, int z){
         return new ChunkPos(this.x + x, this.z + z);
     }
 

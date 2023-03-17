@@ -1,4 +1,7 @@
-package megalul.projectvostok.block;
+package megalul.projectvostok.block.blocks;
+
+import megalul.projectvostok.block.BlockProperties;
+import megalul.projectvostok.block.BlockState;
 
 public enum Block{
 

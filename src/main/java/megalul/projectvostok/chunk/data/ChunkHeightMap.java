@@ -1,13 +1,15 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.chunk.data;
 
 import static megalul.projectvostok.chunk.ChunkUtils.*;
 
 public class ChunkHeightMap{
 
     private final short[] heights;
+    private final short[] depths;
 
     public ChunkHeightMap(){
-        heights = new short[SIZE_2D];
+        heights = new short[AREA];
+        depths = new short[AREA];
     }
 
 
@@ -17,6 +19,15 @@ public class ChunkHeightMap{
 
     public void setHeight(int x, int z, int height){
         heights[getIndex(x, z)] = (short) height;
+    }
+
+
+    public int getDepth(int x, int z){
+        return depths[getIndex(x, z)];
+    }
+
+    public void setDepth(int x, int z, int height){
+        depths[getIndex(x, z)] = (short) height;
     }
 
 }

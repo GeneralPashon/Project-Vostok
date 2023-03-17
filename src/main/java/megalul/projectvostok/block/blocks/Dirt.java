@@ -1,4 +1,6 @@
-package megalul.projectvostok.block;
+package megalul.projectvostok.block.blocks;
+
+import megalul.projectvostok.block.BlockProperties;
 
 public class Dirt extends BlockProperties{
 

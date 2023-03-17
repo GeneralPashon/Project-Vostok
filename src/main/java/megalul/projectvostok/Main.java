@@ -11,15 +11,16 @@ import glit.io.glfw.Key;
 import glit.math.Maths;
 import glit.math.vecmath.vector.Vec3f;
 import glit.util.time.Sync;
-import megalul.projectvostok.block.Block;
+import megalul.projectvostok.block.blocks.Block;
 import megalul.projectvostok.chunk.ChunkUtils;
 import megalul.projectvostok.options.Options;
 import megalul.projectvostok.world.World;
-import megalul.projectvostok.world.WorldRenderer;
+import megalul.projectvostok.world.render.WorldRenderer;
 
 public class Main implements ContextListener{
 
     public static String GAME_DIR_PATH = "./";
+    public static boolean UPDATE_DEPTH_MAP = true;
 
 
     public static void main(String[] args){

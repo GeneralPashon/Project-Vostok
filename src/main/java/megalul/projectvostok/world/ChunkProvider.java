@@ -1,7 +1,5 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.world;
 
-import glit.Glit;
-import glit.io.glfw.Key;
 import glit.math.Maths;
 import glit.math.vecmath.vector.Vec2f;
 import glit.math.vecmath.vector.Vec3f;
@@ -9,6 +7,11 @@ import glit.util.time.FpsCounter;
 import glit.util.time.Sync;
 import megalul.projectvostok.Main;
 import megalul.projectvostok.block.BlockState;
+import megalul.projectvostok.chunk.Chunk;
+import megalul.projectvostok.chunk.data.ChunkPos;
+import megalul.projectvostok.chunk.gen.DefaultGenerator;
+import megalul.projectvostok.chunk.render.ChunkBuilder;
+import megalul.projectvostok.chunk.render.ChunkMesh;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -114,28 +117,18 @@ public class ChunkProvider{
 
     private void findChunks(){
         Vec3f camPos = getCamPos();
-        int renderDist = session.getOptions().getRenderDistance();
 
-        int beginX = Maths.floor(camPos.x) - renderDist;
-        int beginZ = Maths.floor(camPos.z) - renderDist;
-        int endX = beginX + 1 + renderDist * 2;
-        int endZ = beginZ + 1 + renderDist * 2;
+        if(loadedChunkList.size() == 0)
+            ensureInChunkLoad(new ChunkPos(
+                getChunkPos(camPos.xf()),
+                getChunkPos(camPos.zf())
+            ));
 
-        for(int x = beginX; x < endX; x++){
-            for(int z = beginZ; z < endZ; z++){
-                if(isOffTheGrid(x, z))
-                    continue;
-
-                Chunk chunk = getChunk(x, z);
-                if(chunk != null)
-                    continue;
-
-                ChunkPos chunkPos = new ChunkPos(x, z);
-                if(!chunkPos.isInFrustum(session.getCamera()) || chunkLoadQueue.contains(chunkPos) || loadedChunkList.containsKey(chunkPos))
-                    continue;
-
-                chunksToLoadQueue.add(chunkPos);
-            }
+        for(ChunkPos chunkPos: loadedChunkList.keySet()){
+            ensureInChunkLoad(chunkPos.getNeighbor(-1, 0));
+            ensureInChunkLoad(chunkPos.getNeighbor(1, 0));
+            ensureInChunkLoad(chunkPos.getNeighbor(0, -1));
+            ensureInChunkLoad(chunkPos.getNeighbor(0, 1));
         }
 
         if(chunksToLoadQueue.size() != 0){
@@ -181,7 +174,7 @@ public class ChunkProvider{
 
     public void updateChunks(){
         for(Chunk chunk: loadedChunkList.values())
-            if(chunk.getField().isDirty())
+            if(chunk.isDirty())
                 rebuildChunk(chunk);
     }
 
@@ -217,12 +210,10 @@ public class ChunkProvider{
         ChunkMesh mesh = meshList.get(chunk.getPos());
         if(mesh == null)
             mesh = new ChunkMesh();
-        else
-            System.out.println("updated mesh");
 
         mesh.setVertices(vertices);
         meshList.put(chunk.getPos(), mesh);
-        chunk.getField().built();
+        chunk.onMeshUpdate();
     }
 
     public void rebuildChunk(Chunk chunk){
@@ -231,38 +222,52 @@ public class ChunkProvider{
     }
 
 
+    private void ensureInChunkLoad(ChunkPos chunkPos){
+        if(isOffTheGrid(chunkPos))
+            return;
+
+        Chunk chunk = getChunk(chunkPos);
+        if(chunk != null)
+            return;
+
+        if(!chunkPos.isInFrustum(session.getCamera()) || chunkLoadQueue.contains(chunkPos) || loadedChunkList.containsKey(chunkPos))
+            return;
+
+        chunksToLoadQueue.add(chunkPos);
+    }
+
     private void updateNeighborChunksEdgesAndSelf(Chunk chunk, boolean loaded){
-        Chunk neighbor = loadedChunkList.get(chunk.getPos().neighbor(-1, 0));
+        Chunk neighbor = loadedChunkList.get(chunk.getPos().getNeighbor(-1, 0));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
-                    neighbor.getField().set(SIZE, y, i, loaded ? chunk.getField().get(0, y, i) : BlockState.AIR);
+                    neighbor.setBlock(SIZE, y, i, loaded ? chunk.getBlock(0, y, i) : BlockState.AIR);
                     if(loaded)
-                        chunk.getField().set(-1, y, i, neighbor.getField().get(SIZE_IDX, y, i));
+                        chunk.setBlock(-1, y, i, neighbor.getBlock(SIZE_IDX, y, i));
                 }
-        neighbor = loadedChunkList.get(chunk.getPos().neighbor(1, 0));
+        neighbor = loadedChunkList.get(chunk.getPos().getNeighbor(1, 0));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
-                    neighbor.getField().set(-1, y, i, loaded ? chunk.getField().get(SIZE_IDX, y, i) : BlockState.AIR);
+                    neighbor.setBlock(-1, y, i, loaded ? chunk.getBlock(SIZE_IDX, y, i) : BlockState.AIR);
                     if(loaded)
-                        chunk.getField().set(SIZE, y, i, neighbor.getField().get(0, y, i));
+                        chunk.setBlock(SIZE, y, i, neighbor.getBlock(0, y, i));
                 }
-        neighbor = loadedChunkList.get(chunk.getPos().neighbor(0, -1));
+        neighbor = loadedChunkList.get(chunk.getPos().getNeighbor(0, -1));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
-                    neighbor.getField().set(i, y, SIZE, loaded ? chunk.getField().get(i, y, 0) : BlockState.AIR);
+                    neighbor.setBlock(i, y, SIZE, loaded ? chunk.getBlock(i, y, 0) : BlockState.AIR);
                     if(loaded)
-                        chunk.getField().set(i, y, -1, neighbor.getField().get(i, y, SIZE_IDX));
+                        chunk.setBlock(i, y, -1, neighbor.getBlock(i, y, SIZE_IDX));
                 }
-        neighbor = loadedChunkList.get(chunk.getPos().neighbor(0, 1));
+        neighbor = loadedChunkList.get(chunk.getPos().getNeighbor(0, 1));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
-                    neighbor.getField().set(i, y, -1, loaded ? chunk.getField().get(i, y, SIZE_IDX) : BlockState.AIR);
+                    neighbor.setBlock(i, y, -1, loaded ? chunk.getBlock(i, y, SIZE_IDX) : BlockState.AIR);
                     if(loaded)
-                        chunk.getField().set(i, y, SIZE, neighbor.getField().get(i, y, 0));
+                        chunk.setBlock(i, y, SIZE, neighbor.getBlock(i, y, 0));
                 }
     }
 

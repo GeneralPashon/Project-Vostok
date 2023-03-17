@@ -1,4 +1,4 @@
-package megalul.projectvostok.world;
+package megalul.projectvostok.world.render;
 
 import glit.context.Disposable;
 import glit.files.FileHandle;
@@ -8,8 +8,8 @@ import glit.graphics.util.Shader;
 import glit.math.vecmath.matrix.Matrix4f;
 import glit.math.vecmath.vector.Vec3f;
 import megalul.projectvostok.Main;
-import megalul.projectvostok.chunk.ChunkMesh;
-import megalul.projectvostok.chunk.ChunkPos;
+import megalul.projectvostok.chunk.render.ChunkMesh;
+import megalul.projectvostok.chunk.data.ChunkPos;
 import megalul.projectvostok.chunk.ChunkUtils;
 
 import java.util.Map;

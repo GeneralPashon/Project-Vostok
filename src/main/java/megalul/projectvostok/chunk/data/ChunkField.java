@@ -1,7 +1,9 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.chunk.data;
 
+import megalul.projectvostok.Main;
 import megalul.projectvostok.block.BlockState;
-import megalul.projectvostok.block.Block;
+import megalul.projectvostok.block.blocks.Block;
+import megalul.projectvostok.chunk.Chunk;
 
 import static megalul.projectvostok.chunk.ChunkUtils.*;
 
@@ -17,22 +19,26 @@ public class ChunkField{
         this.chunkOf = chunkOf;
 
         heightMap = new ChunkHeightMap();
-        blocks = new short[C_SIZE_3D];
+        blocks = new short[C_VOLUME];
     }
 
 
     public BlockState get(int x, int y, int z){
-        return new BlockState(blocks[getIndex(x, y, z)]);
+        return new BlockState(blocks[getIndexC(x, y, z)]);
     }
 
     public void set(int x, int y, int z, BlockState block){
-        byte oldID = BlockState.getIDFromState(blocks[getIndex(x, y, z)]);
-        blocks[getIndex(x, y, z)] = block.getState();
+        byte oldID = BlockState.getIDFromState(blocks[getIndexC(x, y, z)]);
+        blocks[getIndexC(x, y, z)] = block.getState();
 
-        if(oldID != block.type.id && !isOutOfBounds(x, z)){
+        if(oldID != block.getID() && !isOutOfBounds(x, z)){
             dirty = true;
-            updateHeight(x, y, z, block.type != Block.AIR);
+
             updateEdgesOfNeighborChunks(x, y, z, block);
+
+            updateHeight(x, y, z, !block.getProp().isEmpty());
+            if(Main.UPDATE_DEPTH_MAP)
+                updateDepth(x, y, z, !block.getProp().isEmpty());
         }
     }
 
@@ -49,8 +55,20 @@ public class ChunkField{
         heightMap.setHeight(x, z, height);
     }
 
+    private void updateDepth(int x, int y, int z, boolean placed){
+        int depth = heightMap.getDepth(x, z);
+
+        if(y == depth && !placed)
+            for(depth++; getID(x, depth, z) == Block.AIR.id && depth < HEIGHT_IDX; )
+                depth++;
+        else if(y < depth && placed)
+            depth = y;
+
+        heightMap.setDepth(x, z, depth);
+    }
+
     private int getID(int x, int y, int z){
-        return BlockState.getIDFromState(blocks[getIndex(x, y, z)]);
+        return BlockState.getIDFromState(blocks[getIndexC(x, y, z)]);
     }
 
 
@@ -58,33 +76,33 @@ public class ChunkField{
         if(x == 0){
             Chunk neighbor = getNeighbor(-1, 0);
             if(neighbor != null){
-                neighbor.getField().set(SIZE, y, z, block);
-                chunkOf.providerOf.rebuildChunk(neighbor);
+                neighbor.setBlock(SIZE, y, z, block);
+                chunkOf.getProvider().rebuildChunk(neighbor);
             }
         }else if(x == SIZE_IDX){
             Chunk neighbor = getNeighbor(1, 0);
             if(neighbor != null){
-                neighbor.getField().set(-1, y, z, block);
-                chunkOf.providerOf.rebuildChunk(neighbor);
+                neighbor.setBlock(-1, y, z, block);
+                chunkOf.getProvider().rebuildChunk(neighbor);
             }
         }
         if(z == 0){
             Chunk neighbor = getNeighbor(0, -1);
             if(neighbor != null){
-                neighbor.getField().set(x, y, SIZE, block);
-                chunkOf.providerOf.rebuildChunk(neighbor);
+                neighbor.setBlock(x, y, SIZE, block);
+                chunkOf.getProvider().rebuildChunk(neighbor);
             }
         }else if(z == SIZE_IDX){
             Chunk neighbor = getNeighbor(0 , 1);
             if(neighbor != null){
-                neighbor.getField().set(x, y, -1, block);
-                chunkOf.providerOf.rebuildChunk(neighbor);
+                neighbor.setBlock(x, y, -1, block);
+                chunkOf.getProvider().rebuildChunk(neighbor);
             }
         }
     }
 
     private Chunk getNeighbor(int x, int z){
-        return chunkOf.providerOf.getChunk(chunkOf.getPos().neighbor(x, z));
+        return chunkOf.getProvider().getChunk(chunkOf.getPos().getNeighbor(x, z));
     }
 
 
@@ -96,7 +114,7 @@ public class ChunkField{
         return dirty;
     }
 
-    public void built(){
+    public void onMeshUpdate(){
         dirty = false;
     }
 

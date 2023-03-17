@@ -1,29 +1,55 @@
 package megalul.projectvostok.chunk;
 
-import java.util.Objects;
+import megalul.projectvostok.block.BlockState;
+import megalul.projectvostok.chunk.data.ChunkField;
+import megalul.projectvostok.chunk.data.ChunkPos;
+import megalul.projectvostok.world.ChunkProvider;
 
 public class Chunk{
 
-    protected final ChunkProvider providerOf;
-
+    private final ChunkProvider providerOf;
     private final ChunkPos position;
-    private final ChunkField blocks;
+    private final ChunkField field;
 
 
     public Chunk(ChunkProvider providerOf, ChunkPos position){
         this.providerOf = providerOf;
 
         this.position = position;
-        blocks = new ChunkField(this);
+        field = new ChunkField(this);
     }
 
+
+    public ChunkProvider getProvider(){
+        return providerOf;
+    }
 
     public ChunkPos getPos(){
         return position;
     }
 
-    public ChunkField getField(){
-        return blocks;
+    public int getHeight(int x, int z){
+        return field.getHeightMap().getHeight(x, z);
+    }
+
+    public int getDepth(int x, int z){
+        return field.getHeightMap().getDepth(x, z);
+    }
+
+    public BlockState getBlock(int x, int y, int z){
+        return field.get(x, y, z);
+    }
+
+    public void setBlock(int x, int y, int z, BlockState block){
+        field.set(x, y, z, block);
+    }
+
+    public boolean isDirty(){
+        return field.isDirty();
+    }
+
+    public void onMeshUpdate(){
+        field.onMeshUpdate();
     }
 
 

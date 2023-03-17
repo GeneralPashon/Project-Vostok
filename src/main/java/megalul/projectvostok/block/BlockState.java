@@ -1,13 +1,15 @@
 package megalul.projectvostok.block;
 
+import megalul.projectvostok.block.blocks.Block;
+
 public class BlockState{
 
     public static final BlockState AIR = new BlockState(Block.AIR);
 
 
     private final short state; // 8bits=data, 8bits=id
-    public final Block type;
-    public final byte extraData;
+    private final Block type;
+    private final byte extraData;
 
     public BlockState(short state){
         this.state = state;
@@ -29,6 +31,23 @@ public class BlockState{
 
     public short getState(){
         return state;
+    }
+
+
+    public Block getType(){
+        return type;
+    }
+
+    public byte getExtraData(){
+        return extraData;
+    }
+
+    public int getID(){
+        return type.id;
+    }
+
+    public BlockProperties getProp(){
+        return type.properties;
     }
 
 

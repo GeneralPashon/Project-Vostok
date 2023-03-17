@@ -6,19 +6,25 @@ public class ChunkUtils{
 
     public static final int SIZE = 1 << SIZE_SHIFT;
     public static final int HEIGHT = 256;
-    public static final int SIZE_2D = SIZE * SIZE;
+    public static final int AREA = SIZE * SIZE;
+    public static final int VOLUME = AREA * HEIGHT;
+
+    public static final int SIZE_IDX = SIZE - 1;
+    public static final int HEIGHT_IDX = HEIGHT - 1;
 
     // C = data Container
     public static final int C_HEIGHT = HEIGHT + 2;
     public static final int C_SIZE = SIZE + 2;
-    public static final int C_SIZE_2D = C_SIZE * C_SIZE;
-    public static final int C_SIZE_3D = C_SIZE_2D * C_HEIGHT;
+    public static final int C_AREA = C_SIZE * C_SIZE;
+    public static final int C_VOLUME = C_AREA * C_HEIGHT;
 
-    public static final int SIZE_IDX = SIZE - 1;
 
+    public static int getIndexC(int x, int y, int z){
+        return (x + 1) + (z + 1) * C_SIZE + (y + 1) * C_AREA;
+    }
 
     public static int getIndex(int x, int y, int z){
-        return (x + 1) + ((z + 1) + (y + 1) * C_SIZE) * C_SIZE;
+        return x + z * SIZE + y * AREA;
     }
 
     public static int getIndex(int x, int z){

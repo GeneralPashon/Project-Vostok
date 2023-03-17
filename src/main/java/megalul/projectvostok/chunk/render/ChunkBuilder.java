@@ -1,8 +1,10 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.chunk.render;
 
 import megalul.projectvostok.block.BlockState;
+import megalul.projectvostok.chunk.Chunk;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static megalul.projectvostok.chunk.ChunkUtils.*;
@@ -10,33 +12,55 @@ import static megalul.projectvostok.chunk.ChunkUtils.*;
 public class ChunkBuilder{
 
     private static final List<Float> verticesList = new ArrayList<>();
+    private static final byte[] masks = new byte[VOLUME];
+    private static int vertices;
 
     public static float[] build(Chunk chunk){
+        vertices = 0;
+
         for(int x = 0; x < SIZE; x++)
-            for(int y = 0; y < HEIGHT; y++)
-                for(int z = 0; z < SIZE; z++){
-                    BlockState block = chunk.getField().get(x, y, z);
-                    if(block.type.properties.isEmpty())
+            for(int z = 0; z < SIZE; z++)
+                for(int y = chunk.getDepth(x, z); y <= chunk.getHeight(x, z); y++){
+                    BlockState block = chunk.getBlock(x, y, z);
+                    if(block.getProp().isEmpty())
                         continue;
 
-                    if(chunk.getField().get(x - 1, y, z).type.properties.isEmpty())
-                        addNxFace(x, y, z);
-                    if(chunk.getField().get(x + 1, y, z).type.properties.isEmpty())
-                        addPxFace(x, y, z);
-                    if(chunk.getField().get(x, y - 1, z).type.properties.isEmpty())
-                        addNyFace(x, y, z);
-                    if(chunk.getField().get(x, y + 1, z).type.properties.isEmpty())
-                        addPyFace(x, y, z);
-                    if(chunk.getField().get(x, y, z - 1).type.properties.isEmpty())
-                        addNzFace(x, y, z);
-                    if(chunk.getField().get(x, y, z + 1).type.properties.isEmpty())
-                        addPzFace(x, y, z);
+                    if(block.getProp().isSolid()){
+                        byte mask = 0;
+
+                        if(chunk.getBlock(x - 1, y, z).getProp().isEmpty()) mask |= 1;
+                        if(chunk.getBlock(x + 1, y, z).getProp().isEmpty()) mask |= 2;
+                        if(chunk.getBlock(x, y - 1, z).getProp().isEmpty()) mask |= 4;
+                        if(chunk.getBlock(x, y + 1, z).getProp().isEmpty()) mask |= 8;
+                        if(chunk.getBlock(x, y, z - 1).getProp().isEmpty()) mask |= 16;
+                        if(chunk.getBlock(x, y, z + 1).getProp().isEmpty()) mask |= 32;
+
+                        masks[getIndex(x, y, z)] = mask;
+                    }
                 }
+
+        for(int i = 0; i < masks.length; i++){
+            int x = i % SIZE;
+            int z = (i - x) / SIZE % SIZE;
+            int y = (i - x - z * SIZE) / AREA;
+            byte mask = masks[i];
+
+            if((mask      & 1) == 1) addNxFace(x, y, z);
+            if((mask >> 1 & 1) == 1) addPxFace(x, y, z);
+            if((mask >> 2 & 1) == 1) addNyFace(x, y, z);
+            if((mask >> 3 & 1) == 1) addPyFace(x, y, z);
+            if((mask >> 4 & 1) == 1) addNzFace(x, y, z);
+            if((mask >> 5 & 1) == 1) addPzFace(x, y, z);
+        }
 
         float[] array = new float[verticesList.size()];
         for(int i = 0; i < array.length; i++)
             array[i] = verticesList.get(i);
+
         verticesList.clear();
+        Arrays.fill(masks, (byte) 0);
+
+        System.out.println("Faces: " + (vertices / 6));
 
         return array;
     }
@@ -107,6 +131,8 @@ public class ChunkBuilder{
         verticesList.add(a);
         verticesList.add(u);
         verticesList.add(v);
+
+        vertices++;
     }
 
 }

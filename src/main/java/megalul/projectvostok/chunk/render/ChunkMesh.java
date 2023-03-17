@@ -1,8 +1,7 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.chunk.render;
 
 import glit.context.Disposable;
 import glit.graphics.gl.BufferUsage;
-import glit.graphics.gl.Primitive;
 import glit.graphics.gl.Type;
 import glit.graphics.vertex.VertexArray;
 import glit.graphics.vertex.VertexAttr;

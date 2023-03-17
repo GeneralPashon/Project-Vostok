@@ -1,9 +1,10 @@
-package megalul.projectvostok.chunk;
+package megalul.projectvostok.chunk.gen;
 
 import glit.math.Maths;
 import glit.math.function.FastNoiseLite;
 import megalul.projectvostok.block.BlockState;
-import megalul.projectvostok.block.Block;
+import megalul.projectvostok.block.blocks.Block;
+import megalul.projectvostok.chunk.Chunk;
 
 public class DefaultGenerator implements ChunkGenerator{
 
@@ -19,7 +20,7 @@ public class DefaultGenerator implements ChunkGenerator{
         for(int i = 0; i < 16; i++)
             for(int j = 0; j < 16; j++){
                 int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * 16 + 128);
-                chunk.getField().set(i, y, j, new BlockState(Block.DIRT));
+                chunk.setBlock(i, y, j, new BlockState(Block.DIRT));
             }
     }
 

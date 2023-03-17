@@ -1,5 +1,7 @@
 package megalul.projectvostok.block;
 
+import megalul.projectvostok.block.blocks.Block;
+
 public abstract class BlockProperties{
 
     private final int id;
