@@ -80,10 +80,9 @@ public class Main implements ContextListener{
         font.drawText(uiBatch, "Threads:", 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 3);
         font.drawText(uiBatch, "chunk find tps: " + world.getChunks().findTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 4);
         font.drawText(uiBatch, "chunk load tps: " + world.getChunks().loadTps.get(),   25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 5);
-        font.drawText(uiBatch, "chunk unload tps: " + world.getChunks().unloadTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
-        font.drawText(uiBatch, "chunk build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 7);
-        font.drawText(uiBatch, "chunk update tps: " + world.getChunks().updateTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 8);
-        font.drawText(uiBatch, "meshes: " + world.getChunks().getMeshes().size(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 9);
+        font.drawText(uiBatch, "chunk build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
+        font.drawText(uiBatch, "chunk check tps: " + world.getChunks().checkTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 7);
+        font.drawText(uiBatch, "meshes: " + world.getChunks().getMeshes().size(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 8);
 
         font.drawText(uiBatch, "1, 2, 3 - set render mode", 25, 25 + font.getScaledLineHeight() * 0);
         font.drawText(uiBatch, "B - set block in camera", 25, 25 + font.getScaledLineHeight() * 1);

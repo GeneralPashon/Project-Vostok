@@ -29,11 +29,11 @@ public class Chunk{
     }
 
     public int getHeight(int x, int z){
-        return field.getHeightMap().getHeight(x, z);
+        return field.getHeightDepthMap().getHeight(x, z);
     }
 
     public int getDepth(int x, int z){
-        return field.getHeightMap().getDepth(x, z);
+        return field.getHeightDepthMap().getDepth(x, z);
     }
 
     public BlockState getBlock(int x, int y, int z){
@@ -50,6 +50,14 @@ public class Chunk{
 
     public void onMeshUpdate(){
         field.onMeshUpdate();
+    }
+
+    public int getMaxY(){
+        return field.getHeightDepthMap().getMax();
+    }
+
+    public int getMinY(){
+        return field.getHeightDepthMap().getMin();
     }
 
 

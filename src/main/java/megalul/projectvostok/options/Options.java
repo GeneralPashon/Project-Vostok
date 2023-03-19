@@ -3,6 +3,7 @@ package megalul.projectvostok.options;
 import glit.Glit;
 import glit.files.FileHandle;
 import glit.io.glfw.Key;
+import glit.util.io.FastReader;
 import megalul.projectvostok.Main;
 
 import java.io.PrintStream;
@@ -19,7 +20,7 @@ public class Options{
 
     private final Map<KeyMapping, Key> keyMappings;
     private int fov = 80;
-    private int renderDistance = 32;
+    private int renderDistance = 8;
     private int maxFramerate = 0;
     private boolean fullscreen = false;
     private boolean showFps = false;
@@ -44,41 +45,43 @@ public class Options{
     }
 
     private void load(){
-        String[] lines = optionsFile.readString().split("\n");
+        FastReader reader = optionsFile.reader();
 
-        for(String line: lines){
-            String[] parts = line.split(" : ");
-            if(parts.length != 2)
-                continue;
+        try{
+            while(reader.hasNext()){
+                String[] parts = reader.nextLine().split(" : ");
+                if(parts.length != 2)
+                    continue;
 
-            String value = parts[1].trim();
+                String value = parts[1].trim();
 
-            String[] keyParts = parts[0].split("\\.");
-            if(keyParts.length != 2)
-                continue;
+                String[] keyParts = parts[0].split("\\.");
+                if(keyParts.length != 2)
+                    continue;
 
-            String category = keyParts[0];
-            String key = keyParts[1];
+                String category = keyParts[0];
+                String key = keyParts[1];
 
-            // category.key : value
-            switch(category){
-                case "graphics" -> {
-                    switch(key){
-                        case "fov" -> fov = Integer.parseInt(value);
-                        case "renderDistance" -> renderDistance = Integer.parseInt(value);
-                        case "maxFramerate" -> maxFramerate = Integer.parseInt(value);
-                        case "fullscreen" -> fullscreen = Boolean.parseBoolean(value);
-                        case "showFps" -> showFps = Boolean.parseBoolean(value);
+                // category.key : value
+                switch(category){
+                    case "graphics" -> {
+                        switch(key){
+                            case "fov" -> fov = Integer.parseInt(value);
+                            case "renderDistance" -> renderDistance = Integer.parseInt(value);
+                            case "maxFramerate" -> maxFramerate = Integer.parseInt(value);
+                            case "fullscreen" -> fullscreen = Boolean.parseBoolean(value);
+                            case "showFps" -> showFps = Boolean.parseBoolean(value);
+                        }
                     }
-                }
-                case "key" -> keyMappings.put(KeyMapping.valueOf(key.toUpperCase()), Key.valueOf(value.toUpperCase()));
-                case "control" -> {
-                    switch(key){
-                        case "mouseSensitivity" -> mouseSensitivity = Float.parseFloat(value);
+                    case "key" -> keyMappings.put(KeyMapping.valueOf(key.toUpperCase()), Key.valueOf(value.toUpperCase()));
+                    case "control" -> {
+                        switch(key){
+                            case "mouseSensitivity" -> mouseSensitivity = Float.parseFloat(value);
+                        }
                     }
                 }
             }
-        }
+        }catch(Throwable ignored){ }
     }
 
     public void save(){

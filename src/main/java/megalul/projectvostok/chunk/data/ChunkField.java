@@ -12,13 +12,13 @@ public class ChunkField{
     private final Chunk chunkOf;
 
     private final short[] blocks;
-    private final ChunkHeightMap heightMap;
+    private final HeightDepthMap heightDepthMap;
     private volatile boolean dirty;
 
     public ChunkField(Chunk chunkOf){
         this.chunkOf = chunkOf;
 
-        heightMap = new ChunkHeightMap();
+        heightDepthMap = new HeightDepthMap();
         blocks = new short[C_VOLUME];
     }
 
@@ -44,7 +44,7 @@ public class ChunkField{
 
 
     private void updateHeight(int x, int y, int z, boolean placed){
-        int height = heightMap.getHeight(x, z);
+        int height = heightDepthMap.getHeight(x, z);
 
         if(y == height && !placed)
             for(height--; getID(x, height, z) == Block.AIR.id && height > 0; )
@@ -52,11 +52,12 @@ public class ChunkField{
         else if(y > height && placed)
             height = y;
 
-        heightMap.setHeight(x, z, height);
+        heightDepthMap.setHeight(x, z, height);
+        heightDepthMap.updateMax();
     }
 
     private void updateDepth(int x, int y, int z, boolean placed){
-        int depth = heightMap.getDepth(x, z);
+        int depth = heightDepthMap.getDepth(x, z);
 
         if(y == depth && !placed)
             for(depth++; getID(x, depth, z) == Block.AIR.id && depth < HEIGHT_IDX; )
@@ -64,7 +65,8 @@ public class ChunkField{
         else if(y < depth && placed)
             depth = y;
 
-        heightMap.setDepth(x, z, depth);
+        heightDepthMap.setDepth(x, z, depth);
+        heightDepthMap.updateMin();
     }
 
     private int getID(int x, int y, int z){
@@ -106,8 +108,8 @@ public class ChunkField{
     }
 
 
-    public ChunkHeightMap getHeightMap(){
-        return heightMap;
+    public HeightDepthMap getHeightDepthMap(){
+        return heightDepthMap;
     }
 
     public boolean isDirty(){
