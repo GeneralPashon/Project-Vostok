@@ -3,7 +3,12 @@ package megalul.projectvostok;
 import glit.Glit;
 import glit.graphics.camera.PerspectiveCamera;
 import glit.math.vecmath.vector.Vec3f;
+import megalul.projectvostok.chunk.Chunk;
+import megalul.projectvostok.chunk.data.ChunkPos;
 import megalul.projectvostok.options.KeyMapping;
+
+import static megalul.projectvostok.chunk.ChunkUtils.HEIGHT;
+import static megalul.projectvostok.chunk.ChunkUtils.SIZE;
 
 public class GameCamera extends PerspectiveCamera{
 
@@ -24,8 +29,8 @@ public class GameCamera extends PerspectiveCamera{
 
 
     public void update(){
-        if(Glit.window().isFocused() && Glit.mouse().inWindow()){
-            if(!doNotRotateInTheNextFrame){
+        if(Glit.window().isFocused()){
+            if(!doNotRotateInTheNextFrame && Glit.mouse().inWindow()){
                 float x = Glit.mouse().getX();
                 float y = Glit.mouse().getY();
                 dAngX += Glit.getWidth() / 2F - x;
@@ -44,7 +49,7 @@ public class GameCamera extends PerspectiveCamera{
         }
 
 
-        float speed = Glit.getDeltaTime() * 15;
+        float speed = Glit.getDeltaTime() * 150;
         if(isPressed(KeyMapping.SPRINT))
             speed *= 3;
 
@@ -79,6 +84,27 @@ public class GameCamera extends PerspectiveCamera{
 
     private boolean isPressed(KeyMapping key){
         return Glit.isPressed(session.getOptions().getKey(key));
+    }
+    
+    
+    public boolean isChunkSeen(int chunkX, int chunkZ){
+        return getFrustum().isBoxInFrustum(
+            chunkX * SIZE, 0, chunkZ * SIZE,
+            chunkX * SIZE + SIZE, HEIGHT, chunkZ * SIZE + SIZE
+        );
+    }
+    
+    public boolean isChunkSeen(ChunkPos pos){
+        return isChunkSeen(pos.x, pos.z);
+    }
+    
+    public boolean isChunkSeen(Chunk chunk){
+        ChunkPos pos = chunk.getPos();
+        
+        return getFrustum().isBoxInFrustum(
+            pos.x * SIZE, chunk.getMinY(), pos.z * SIZE,
+            pos.x * SIZE + SIZE, chunk.getMaxY() + 1, pos.z * SIZE + SIZE
+        );
     }
 
 }

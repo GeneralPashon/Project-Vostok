@@ -5,6 +5,7 @@ import glit.files.FileHandle;
 import glit.io.glfw.Key;
 import glit.util.io.FastReader;
 import megalul.projectvostok.Main;
+import megalul.projectvostok.chunk.ChunkUtils;
 
 import java.io.PrintStream;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class Options{
 
     private void init(){
         Glit.window().setFullscreen(fullscreen);
-        setMaxFramerate(maxFramerate, UNLIMITED_FPS_SETTING_THRESHOLD);
+        setMaxFramerate(maxFramerate);
     }
 
     private void load(){
@@ -66,17 +67,17 @@ public class Options{
                 switch(category){
                     case "graphics" -> {
                         switch(key){
-                            case "fov" -> fov = Integer.parseInt(value);
-                            case "renderDistance" -> renderDistance = Integer.parseInt(value);
-                            case "maxFramerate" -> maxFramerate = Integer.parseInt(value);
-                            case "fullscreen" -> fullscreen = Boolean.parseBoolean(value);
-                            case "showFps" -> showFps = Boolean.parseBoolean(value);
+                            case "fov" -> setFOV(Integer.parseInt(value));
+                            case "renderDistance" -> setRenderDistance(Integer.parseInt(value));
+                            case "maxFramerate" -> setMaxFramerate(Integer.parseInt(value));
+                            case "fullscreen" -> setFullscreen(Boolean.parseBoolean(value));
+                            case "showFps" -> setShowFPS(Boolean.parseBoolean(value));
                         }
                     }
-                    case "key" -> keyMappings.put(KeyMapping.valueOf(key.toUpperCase()), Key.valueOf(value.toUpperCase()));
+                    case "key" -> setKey(KeyMapping.valueOf(key.toUpperCase()), Key.valueOf(value.toUpperCase()));
                     case "control" -> {
                         switch(key){
-                            case "mouseSensitivity" -> mouseSensitivity = Float.parseFloat(value);
+                            case "mouseSensitivity" -> setMouseSensitivity(Float.parseFloat(value));
                         }
                     }
                 }
@@ -127,6 +128,7 @@ public class Options{
 
     public void setRenderDistance(int renderDistance){
         this.renderDistance = renderDistance;
+        session.getCamera().setFar((renderDistance + 0.5F) * ChunkUtils.SIZE * 2);
     }
 
 
@@ -134,11 +136,11 @@ public class Options{
         return maxFramerate;
     }
 
-    public void setMaxFramerate(int maxFramerate, int unlimitedThreshold){
+    public void setMaxFramerate(int maxFramerate){
         this.maxFramerate = maxFramerate;
         session.getFpsSync().setFps(maxFramerate);
 
-        session.getFpsSync().enable(maxFramerate > 0 && maxFramerate < unlimitedThreshold);
+        session.getFpsSync().enable(maxFramerate > 0 && maxFramerate < UNLIMITED_FPS_SETTING_THRESHOLD);
         Glit.window().setVsync(maxFramerate == 0);
     }
 

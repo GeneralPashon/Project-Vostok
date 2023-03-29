@@ -44,13 +44,14 @@ public class Main implements ContextListener{
         new FileHandle(GAME_DIR_PATH).mkdirs();
         uiBatch = new TextureBatch(200);
         font = FontLoader.getDefault();
-
-        fpsSync = new Sync(0);
-        options = new Options(this, GAME_DIR_PATH);
-
+    
         camera = new GameCamera(this, 0.1, 1000, 110);
         camera.getPos().y = ChunkUtils.HEIGHT;
         camera.getRot().set(0, 0, 0);
+
+        fpsSync = new Sync(0);
+        options = new Options(this, GAME_DIR_PATH);
+        
         renderer = new WorldRenderer(this);
         world = new World(this);
     }
@@ -83,6 +84,7 @@ public class Main implements ContextListener{
         font.drawText(uiBatch, "chunk build tps: " + world.getChunks().buildTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 6);
         font.drawText(uiBatch, "chunk check tps: " + world.getChunks().checkTps.get(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 7);
         font.drawText(uiBatch, "meshes: " + world.getChunks().getMeshes().size(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 8);
+        font.drawText(uiBatch, "render chunks: " + world.getChunks().getChunks().stream().filter(camera::isChunkSeen).count(), 25, Glit.getHeight() - 25 - font.getScaledLineHeight() * 9);
 
         font.drawText(uiBatch, "1, 2, 3 - set render mode", 25, 25 + font.getScaledLineHeight() * 0);
         font.drawText(uiBatch, "B - set block in camera", 25, 25 + font.getScaledLineHeight() * 1);

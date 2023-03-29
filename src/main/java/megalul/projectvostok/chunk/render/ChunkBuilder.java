@@ -1,7 +1,6 @@
 package megalul.projectvostok.chunk.render;
 
 import glit.graphics.util.color.Color;
-import glit.math.Maths;
 import megalul.projectvostok.block.BlockState;
 import megalul.projectvostok.chunk.Chunk;
 
@@ -28,36 +27,43 @@ public class ChunkBuilder{
     public static float[] build(Chunk chunk){
         vertexIndex = 0;
 
-        for(int x = 0; x < C_SIZE; x++)
-            for(int z = 0; z < C_SIZE; z++){
+        for(int x = 0; x < SIZE; x++)
+            for(int z = 0; z < SIZE; z++){
 
-                final int bx = x - 1; // Block X
-                final int bz = z - 1; // Block Z
+                // final int bx = x - 1; // Block X
+                // final int bz = z - 1; // Block Z
 
-                final int hx = Maths.clamp(x, 0, SIZE_IDX);
-                final int hz = Maths.clamp(z, 0, SIZE_IDX);
+                //final int hx = Maths.clamp(x, 0, SIZE_IDX);
+                //final int hz = Maths.clamp(z, 0, SIZE_IDX);
 
-                final int maxHeight = chunk.getHeight(hx, hz) + 1;
+                final int maxHeight = chunk.getHeight(x, z) + 1;
 
-                for(int y = chunk.getDepth(hx, hz); y < maxHeight; y++){
-                    final BlockState block = chunk.getBlock(bx, y, bz);
+                for(int y = chunk.getDepth(x, z); y < maxHeight; y++){
+                    final BlockState block = chunk.getBlock(x, y, z);
                     if(block.getProp().isEmpty())
                         continue;
 
                     if(block.getProp().isSolid()){
-                        byte mask = 0;
+                        //byte mask = 0;
 
-                        if(chunk.getBlock(bx - 1, y, bz).getProp().isEmpty()) mask |= 1;
-                        if(chunk.getBlock(bx + 1, y, bz).getProp().isEmpty()) mask |= 2;
-                        if(chunk.getBlock(bx, y - 1, bz).getProp().isEmpty()) mask |= 4;
-                        if(chunk.getBlock(bx, y + 1, bz).getProp().isEmpty()) mask |= 8;
-                        if(chunk.getBlock(bx, y, bz - 1).getProp().isEmpty()) mask |= 16;
-                        if(chunk.getBlock(bx, y, bz + 1).getProp().isEmpty()) mask |= 32;
+                        if(chunk.getBlock(x - 1, y, z).getProp().isEmpty()) addNxFace(x, y, z);//mask |= 1;
+                        if(chunk.getBlock(x + 1, y, z).getProp().isEmpty()) addPxFace(x, y, z);//mask |= 2;
+                        if(chunk.getBlock(x, y - 1, z).getProp().isEmpty()) addNyFace(x, y, z);//mask |= 4;
+                        if(chunk.getBlock(x, y + 1, z).getProp().isEmpty()) addPyFace(x, y, z);//mask |= 8;
+                        if(chunk.getBlock(x, y, z - 1).getProp().isEmpty()) addNzFace(x, y, z);//mask |= 16;
+                        if(chunk.getBlock(x, y, z + 1).getProp().isEmpty()) addPzFace(x, y, z);//mask |= 32;
 
-                        masks[getIndexC(bx, y, bz)] = mask;
+                        //masks[getIndexC(bx, y, bz)] = mask;
                     }
                 }
             }
+    
+        // addVertex(0 , 200, 0 , 0, 0);
+        // addVertex(16, 200, 0 , 1, 0);
+        // addVertex(16, 200, 16, 1, 1);
+        // addVertex(16, 200, 16, 1, 1);
+        // addVertex(0 , 200, 16, 0, 1);
+        // addVertex(0 , 200, 0 , 0, 0);
 
         /*for(int i = 0; i < masks.length; i++){
             final int x = i % C_SIZE;
@@ -216,7 +222,7 @@ public class ChunkBuilder{
 
 
     private static void addVertex(float x, float y, float z, float u, float v){
-        float ao = v_ao[AO_INDICES[vertexIndex % 6]];
+        float ao = 1;//v_ao[AO_INDICES[vertexIndex % 6]];
 
         verticesList.add(x);
         verticesList.add(y);
@@ -225,8 +231,8 @@ public class ChunkBuilder{
         verticesList.add(v_color.g() * ao);
         verticesList.add(v_color.b() * ao);
         verticesList.add(v_color.a());
-        verticesList.add(u);
-        verticesList.add(v);
+        verticesList.add(u / 3 + 1 / 3);
+        verticesList.add(v / 3 + 1 / 3);
 
         vertexIndex++;
     }

@@ -6,6 +6,8 @@ import megalul.projectvostok.block.BlockState;
 import megalul.projectvostok.block.blocks.Block;
 import megalul.projectvostok.chunk.Chunk;
 
+import static megalul.projectvostok.chunk.ChunkUtils.*;
+
 public class DefaultGenerator implements ChunkGenerator{
 
     private final FastNoiseLite noise = new FastNoiseLite();
@@ -17,9 +19,9 @@ public class DefaultGenerator implements ChunkGenerator{
 
     @Override
     public void generate(Chunk chunk){
-        for(int i = 0; i < 16; i++)
-            for(int j = 0; j < 16; j++){
-                int y = Maths.round(noise.getNoise(i + 16 * chunk.getPos().x, j + 16 * chunk.getPos().z) * 16 + 128);
+        for(int i = 0; i < SIZE; i++)
+            for(int j = 0; j < SIZE; j++){
+                int y = Maths.round( noise.getNoise(i + SIZE * chunk.getPos().x, j + SIZE * chunk.getPos().z) * 16 + 128);
                 chunk.setBlock(i, y, j, new BlockState(Block.DIRT));
             }
     }

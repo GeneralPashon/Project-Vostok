@@ -1,11 +1,9 @@
-#version 330
+attribute vec3 a_position;
+attribute vec4 a_color;
+attribute vec2 a_uv;
 
-in vec3 a_position;
-in vec4 a_color;
-in vec2 a_uv;
-
-out vec4 color;
-out vec2 uv;
+varying vec4 color;
+varying vec2 uv;
 
 uniform mat4 u_projection;
 uniform mat4 u_view;

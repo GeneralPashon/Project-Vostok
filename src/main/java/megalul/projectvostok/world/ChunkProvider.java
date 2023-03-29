@@ -14,117 +14,118 @@ import megalul.projectvostok.chunk.render.ChunkMesh;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static megalul.projectvostok.chunk.ChunkUtils.*;
 
 public class ChunkProvider{
-
-    public static final Chunk EMPTY_CHUNK = null;
-    private static final int MAX_LOAD_TASKS = 1;
+    
+    private static final int MAX_LOAD_TASKS = 128;
 
     private final Main session;
-
-    private final ConcurrentMap<ChunkPos, Chunk> chunks;
-
-    private final List<ChunkPos> frontiers;
-    private final CopyOnWriteArrayList<ChunkPos> loadQueue;
-    private final Set<ChunkPos> toLoadQueue;
-
-    private final CopyOnWriteArrayList<Chunk> toBuildQueue;
-    private final ConcurrentMap<Chunk, float[]> built;
-    private final ConcurrentMap<ChunkPos, ChunkMesh> meshes;
-
+    
     public final FpsCounter findTps, loadTps, buildTps, checkTps;
+    
+    private final List<ChunkPos> frontiers, newFrontiers;
+    private final Map<ChunkPos, Chunk> allChunks;
+    private final List<ChunkPos> loadQueue;
+    private final List<Chunk> toBuildQueue;
+    private final Map<Chunk, float[]> built;
+    private final Map<Chunk, ChunkMesh> allMeshes;
+    private final List<ChunkMesh> toDispose;
 
 
     public ChunkProvider(Main session){
         this.session = session;
-
-        chunks = new ConcurrentHashMap<>();
+    
         frontiers = new ArrayList<>();
+        newFrontiers = new ArrayList<>();
+        allChunks = new ConcurrentHashMap<>();
+        loadQueue = new CopyOnWriteArrayList<>();
         toBuildQueue = new CopyOnWriteArrayList<>();
         built = new ConcurrentHashMap<>();
-        meshes = new ConcurrentHashMap<>();
-
-        toLoadQueue = new HashSet<>();
-        loadQueue = new CopyOnWriteArrayList<>();
-
+        allMeshes = new ConcurrentHashMap<>();
+        toDispose = new CopyOnWriteArrayList<>();
+        
         findTps = new FpsCounter();
         loadTps = new FpsCounter();
         buildTps = new FpsCounter();
         checkTps = new FpsCounter();
-
-        Thread findThread = new Thread(()->{
+    
+        newThread(()->{
+            findTps.update();
+            findChunks();
+        }, "Find Chunks");
+        newThread(()->{
+            loadTps.update();
+            loadChunks();
+        }, "Load Chunks");
+        newThread(()->{
+            buildTps.update();
+            buildChunks();
+        }, "Build Chunks");
+        newThread(()->{
+            checkTps.update();
+            checkChunks();
+        }, "Check Chunks");
+    }
+    
+    private void newThread(Runnable runnable, String name){
+        Thread thread = new Thread(()->{
             while(!Thread.currentThread().isInterrupted()){
-                findTps.update();
-                findChunks();
+                runnable.run();
                 Thread.yield();
             }
-        }, "Find Chunks Thread");
-        findThread.setDaemon(true);
-        findThread.start();
-
-        Thread loadThread = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted()){
-                loadTps.update();
-                loadChunks();
-                Thread.yield();
-            }
-        }, "Load Chunks Thread");
-        loadThread.setDaemon(true);
-        loadThread.start();
-
-        Thread buildThread = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted()){
-                buildTps.update();
-                buildChunks();
-                Thread.yield();
-            }
-        }, "Build Chunks Thread");
-        buildThread.setDaemon(true);
-        buildThread.start();
-
-        Thread checkThread = new Thread(()->{
-            while(!Thread.currentThread().isInterrupted()){
-                checkTps.update();
-                checkChunks();
-                Thread.yield();
-            }
-        }, "Check Chunks Thread");
-        checkThread.setDaemon(true);
-        checkThread.start();
+        }, name + " Thread");
+        thread.setDaemon(true);
+        thread.start();
     }
 
 
     private void findChunks(){
         Vec3f camPos = getCamPos();
-
-        if(toLoadQueue.size() == 0)
-            ensureInChunkLoad(new ChunkPos(
+        if(frontiers.size() == 0)
+            ensureFrontier(new ChunkPos(
                 getChunkPos(camPos.xf()),
                 getChunkPos(camPos.zf())
             ));
-
-        for(ChunkPos chunkPos: chunks.keySet()){
-            ensureInChunkLoad(chunkPos.getNeighbor(-1, 0));
-            ensureInChunkLoad(chunkPos.getNeighbor(1, 0));
-            ensureInChunkLoad(chunkPos.getNeighbor(0, -1));
-            ensureInChunkLoad(chunkPos.getNeighbor(0, 1));
+        
+        for(int i = 0; i < frontiers.size(); i++){
+            ChunkPos frontierPos = frontiers.get(i);
+            
+            ensureFrontier(frontierPos.getNeighbor(-1, 0));
+            ensureFrontier(frontierPos.getNeighbor(1, 0));
+            ensureFrontier(frontierPos.getNeighbor(0, -1));
+            ensureFrontier(frontierPos.getNeighbor(0, 1));
         }
-
-        if(toLoadQueue.size() != 0){
-            loadQueue.addAll(toLoadQueue);
-            loadQueue.sort((pos1, pos2)->Maths.round(distToChunk(pos1.x, pos1.z, camPos) - Maths.round(distToChunk(pos2.x, pos2.z, camPos))));
-            toLoadQueue.clear();
-        }
+    
+        for(ChunkPos frontier: frontiers)
+            if(!loadQueue.contains(frontier) && !allChunks.containsKey(frontier))
+                newFrontiers.add(frontier);
+    
+        frontiers.removeIf(this::isOffTheGrid);
+        newFrontiers.removeIf(this::isOffTheGrid);
+        
+        if(newFrontiers.size() == 0)
+            return;
+        
+        newFrontiers.sort((pos1, pos2)->Maths.round(distToChunk(pos1.x, pos1.z, camPos) - Maths.round(distToChunk(pos2.x, pos2.z, camPos))));
+        loadQueue.addAll(newFrontiers);
+        newFrontiers.clear();
     }
+    
+    private void ensureFrontier(ChunkPos chunkPos){
+        if(frontiers.contains(chunkPos) || !session.getCamera().isChunkSeen(chunkPos) || isOffTheGrid(chunkPos))
+            return;
+        
+        frontiers.add(chunkPos);
+    }
+    
 
     private void loadChunks(){
         for(ChunkPos chunkPos: loadQueue){
             loadQueue.remove(chunkPos);
-            if(chunkPos == null || isOffTheGrid(chunkPos))
+            if(isOffTheGrid(chunkPos))
                 continue;
 
             loadChunk(chunkPos);
@@ -133,42 +134,47 @@ public class ChunkProvider{
 
     private void buildChunks(){
         for(Chunk chunk: toBuildQueue){
+            toBuildQueue.remove(chunk);
+            if(isOffTheGrid(chunk.getPos()))
+                continue;
+            
             float[] vertices = ChunkBuilder.build(chunk);
             built.put(chunk, vertices);
-
-            toBuildQueue.remove(chunk);
         }
     }
 
     public void checkChunks(){
-        for(Chunk chunk: chunks.values())
-            if(chunk.isDirty())
-                rebuildChunk(chunk);
-
-        loadQueue.removeIf(this::isOffTheGrid);
-
-        for(Chunk chunk: chunks.values())
+        for(Chunk chunk: allChunks.values()){
             if(isOffTheGrid(chunk.getPos()))
                 unloadChunk(chunk);
+            else if(chunk.isDirty())
+                rebuildChunk(chunk);
+        }
+    
+        for(Chunk chunk: allMeshes.keySet())
+            if(isOffTheGrid(chunk.getPos())){
+                allMeshes.remove(chunk);
+                toDispose.add(allMeshes.get(chunk));
+            }
     }
-
+    
     public void updateMeshes(){
         for(Map.Entry<Chunk, float[]> entry: built.entrySet()){
             updateMesh(entry.getKey(), entry.getValue());
             built.remove(entry.getKey());
         }
-
-        for(ChunkPos chunkPos: meshes.keySet())
-            if(chunks.get(chunkPos) == null){
-                meshes.get(chunkPos).dispose();
-                meshes.remove(chunkPos);
-            }
+        
+        for(ChunkMesh mesh: toDispose){
+            toDispose.remove(mesh);
+            if(mesh != null)
+                mesh.dispose();
+        }
     }
 
 
     public void loadChunk(ChunkPos chunkPos){
         Chunk chunk = new Chunk(this, chunkPos);
-        chunks.put(chunkPos, chunk);
+        allChunks.put(chunkPos, chunk);
         DefaultGenerator.getInstance().generate(chunk);
 
         updateNeighborChunksEdgesAndSelf(chunk, true);
@@ -176,17 +182,17 @@ public class ChunkProvider{
     }
 
     public void unloadChunk(Chunk chunk){
-        chunks.remove(chunk.getPos());
+        allChunks.remove(chunk.getPos());
         updateNeighborChunksEdgesAndSelf(chunk, false);
     }
 
     public void updateMesh(Chunk chunk, float[] vertices){
-        ChunkMesh mesh = meshes.get(chunk.getPos());
+        ChunkMesh mesh = allMeshes.get(chunk);
         if(mesh == null)
             mesh = new ChunkMesh();
 
         mesh.setVertices(vertices);
-        meshes.put(chunk.getPos(), mesh);
+        allMeshes.put(chunk, mesh);
         chunk.onMeshUpdate();
     }
 
@@ -194,27 +200,10 @@ public class ChunkProvider{
         if(!toBuildQueue.contains(chunk) && !built.containsKey(chunk))
             toBuildQueue.add(chunk);
     }
-
-
-    private void ensureInChunkLoad(ChunkPos chunkPos){
-        if(toLoadQueue.size() >= MAX_LOAD_TASKS)
-            return;
-
-        if(isOffTheGrid(chunkPos))
-            return;
-
-        Chunk chunk = getChunk(chunkPos);
-        if(chunk != null)
-            return;
-
-        if(!chunkPos.isInFrustum(session.getCamera()) || loadQueue.contains(chunkPos) || chunks.containsKey(chunkPos))
-            return;
-
-        toLoadQueue.add(chunkPos);
-    }
+    
 
     private void updateNeighborChunksEdgesAndSelf(Chunk chunk, boolean loaded){
-        Chunk neighbor = chunks.get(chunk.getPos().getNeighbor(-1, 0));
+        Chunk neighbor = allChunks.get(chunk.getPos().getNeighbor(-1, 0));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
@@ -222,7 +211,7 @@ public class ChunkProvider{
                     if(loaded)
                         chunk.setBlock(-1, y, i, neighbor.getBlock(SIZE_IDX, y, i));
                 }
-        neighbor = chunks.get(chunk.getPos().getNeighbor(1, 0));
+        neighbor = allChunks.get(chunk.getPos().getNeighbor(1, 0));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
@@ -230,7 +219,7 @@ public class ChunkProvider{
                     if(loaded)
                         chunk.setBlock(SIZE, y, i, neighbor.getBlock(0, y, i));
                 }
-        neighbor = chunks.get(chunk.getPos().getNeighbor(0, -1));
+        neighbor = allChunks.get(chunk.getPos().getNeighbor(0, -1));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
@@ -238,7 +227,7 @@ public class ChunkProvider{
                     if(loaded)
                         chunk.setBlock(i, y, -1, neighbor.getBlock(i, y, SIZE_IDX));
                 }
-        neighbor = chunks.get(chunk.getPos().getNeighbor(0, 1));
+        neighbor = allChunks.get(chunk.getPos().getNeighbor(0, 1));
         if(neighbor != null)
             for(int i = 0; i < SIZE; i++)
                 for(int y = 0; y < HEIGHT; y++){
@@ -250,7 +239,7 @@ public class ChunkProvider{
 
 
     public Chunk getChunk(ChunkPos chunkPos){
-        return chunks.getOrDefault(chunkPos, EMPTY_CHUNK);
+        return allChunks.get(chunkPos);
     }
 
     public Chunk getChunk(int chunkX, int chunkZ){
@@ -258,11 +247,15 @@ public class ChunkProvider{
     }
 
     public Collection<Chunk> getChunks(){
-        return chunks.values();
+        return allChunks.values();
     }
 
-    public Collection<Map.Entry<ChunkPos, ChunkMesh>> getMeshes(){
-        return meshes.entrySet();
+    public Map<Chunk, ChunkMesh> getMeshes(){
+        return allMeshes;
+    }
+    
+    public ChunkMesh getMesh(Chunk chunk){
+        return allMeshes.get(chunk);
     }
 
 

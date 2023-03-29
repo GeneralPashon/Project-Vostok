@@ -1,11 +1,8 @@
 package megalul.projectvostok.chunk.data;
 
-import megalul.projectvostok.GameCamera;
-
 import java.util.Objects;
 
-import static megalul.projectvostok.chunk.ChunkUtils.HEIGHT;
-import static megalul.projectvostok.chunk.ChunkUtils.SIZE;
+import static megalul.projectvostok.chunk.ChunkUtils.*;
 
 public class ChunkPos{
 
@@ -15,17 +12,18 @@ public class ChunkPos{
         this.x = x;
         this.z = z;
     }
-
-
-    public boolean isInFrustum(GameCamera camera){
-        return camera.getFrustum().isBoxInFrustum(
-            x * SIZE, 0, z * SIZE,
-            x * SIZE + SIZE, HEIGHT, z * SIZE + SIZE
-        );
-    }
+    
 
     public ChunkPos getNeighbor(int x, int z){
         return new ChunkPos(this.x + x, this.z + z);
+    }
+    
+    public int globalX(){
+        return x * SIZE;
+    }
+    
+    public int globalZ(){
+        return z * SIZE;
     }
 
 
