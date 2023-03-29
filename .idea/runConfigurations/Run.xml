@@ -6,8 +6,7 @@
     <method v="2">
       <option name="Make" enabled="true" />
       <option name="BuildArtifacts" enabled="true">
-        <artifact name="ProjectVostok-linux:jar" />
-        <artifact name="ProjectVostok-windows64" />
+        <artifact name="ProjectVostok windows64/linux" />
       </option>
     </method>
   </configuration>
