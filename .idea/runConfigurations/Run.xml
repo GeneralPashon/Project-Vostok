@@ -6,7 +6,7 @@
     <method v="2">
       <option name="Make" enabled="true" />
       <option name="BuildArtifacts" enabled="true">
-        <artifact name="ProjectVostok windows64/linux" />
+        <artifact name="ProjectVostok" />
       </option>
     </method>
   </configuration>
